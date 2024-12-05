@@ -417,6 +417,8 @@ void CMenuContainer::OpenSubMenu(int index, TActivateType type, bool bShift)
 
 	if (item.id == MENU_PROGRAMS || item.id == MENU_APPS || item.bFolder || (m_Options & CONTAINER_MULTICOL_REC))
 		options |= CONTAINER_MULTICOL_REC;
+	if (item.id==MENU_PROGRAMSXP)
+		options|=CONTAINER_MULTICOL_REC;
 	if ((options & CONTAINER_MULTICOL_REC) && !bShift)
 		options |= CONTAINER_MULTICOLUMN;
 	if (options & CONTAINER_SEARCH)
@@ -1676,7 +1678,7 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 		}
 		if (!pItemPidl1)
 		{
-			if (item.id < MENU_PROGRAMS) return; // non-executable item
+			if (item.id < MENU_PROGRAMS && item.id < MENU_PROGRAMSXP) return; // non-executable item
 			if (item.bFolder && item.pStdItem && item.pStdItem->submenu && !item.pStdItem->command && item.id !=
 				MENU_SHUTDOWN_BUTTON)
 				return; // non-executable item
@@ -1945,7 +1947,7 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 				}
 				else if (_stricmp(command, "rename") == 0 || _stricmp(command, "delete") == 0)
 				{
-					if (item.id != MENU_PROGRAMS) continue;
+					if (item.id != MENU_PROGRAMS && item.id != MENU_PROGRAMSXP) continue;
 				}
 				else if (_stricmp(command, "properties") == 0)
 				{
@@ -2489,6 +2491,18 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 		}
 
 		if (item.id == MENU_PROGRAMS)
+		{
+			bool bNew;
+			if (s_bWin7Style && GetWinVersion() >= WIN_VER_WIN8 && GetSettingBool(L"AllProgramsMetro"))
+				bNew = g_ItemManager.HasNewPrograms(true) || g_ItemManager.HasNewApps(true);
+			else
+				bNew = g_ItemManager.HasNewPrograms(true);
+			if (bNew)
+				InsertMenu(menu, insertBefore++,MF_BYPOSITION | MF_STRING, CMD_MARKOLD,
+				           FindTranslation(L"Menu.RemoveHighlight", L"Remove highlight"));
+				           
+		}
+		if (item.id == MENU_PROGRAMSXP)
 		{
 			bool bNew;
 			if (s_bWin7Style && GetWinVersion() >= WIN_VER_WIN8 && GetSettingBool(L"AllProgramsMetro"))

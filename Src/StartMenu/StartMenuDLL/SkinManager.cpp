@@ -154,6 +154,8 @@ MenuSkin::MenuSkin(void)
 	User_mask.Init();
 	Programs_icon.Init();
 	Programs_icon_selected.Init();
+	ProgramsXP_icon.Init();
+	ProgramsXP_icon_selected.Init();
 	Scrollbar_button.Init();
 	Scrollbar_arrows.Init();
 	Scrollbar_background.Init();
@@ -255,7 +257,9 @@ void MenuSkin::Reset(void)
 	User_bitmap.Reset();
 	User_mask.Reset();
 	Programs_icon.Reset();
+	ProgramsXP_icon.Reset();
 	Programs_icon_selected.Reset();
+	ProgramsXP_icon_selected.Reset();
 	Scrollbar_button.Reset();
 	Scrollbar_arrows.Reset();
 	Scrollbar_background.Reset();
@@ -1327,8 +1331,27 @@ bool MenuSkin::LoadSkinItem(HMODULE hMod, CSkinParser& parser, const wchar_t* na
                             MenuSkin::ItemDrawSettings& settings, MenuSkin::ItemDrawSettings* pDefaults,
                             COLORREF backgroundColor, bool bRTL) const
 {
+	// this one variable is doing all the work
 	wchar_t name2[256];
+	
 	const wchar_t* str;
+	Sprintf(name2, _countof(name2), L"%s_boldfont", name);
+	str = parser.FindSetting(name2);
+	if (str)
+	{
+		settings.boldFont=LoadSkinFont(str, NULL, 0, 0, true);
+		settings.bOwnFont=true;
+	}
+	else if (pDefaults)
+	{
+		settings.boldFont=pDefaults->font;
+		settings.bOwnFont=false;
+	}
+	else
+	{
+		settings.boldFont=LoadSkinFont(NULL, NULL, 0, 0, true);
+		settings.bOwnFont=true;
+	}	
 	Sprintf(name2,_countof(name2), L"%s_font", name);
 	str = parser.FindSetting(name2);
 	if (str)
@@ -1345,6 +1368,45 @@ bool MenuSkin::LoadSkinItem(HMODULE hMod, CSkinParser& parser, const wchar_t* na
 	{
 		settings.font = LoadSkinFont(NULL,NULL, 0, 0, true);
 		settings.bOwnFont = true;
+	}
+
+	Sprintf(name2, _countof(name2), L"Shutdown_item_width", name);
+	str = parser.FindSetting(name2);
+
+	if (str)
+		settings.Shutdown_item_width = _wtol(str);
+	else
+		settings.Shutdown_item_width = 100;
+
+	Sprintf(name2, _countof(name2), L"Logoff_item_width", name);
+	str = parser.FindSetting(name2);
+
+	if (str)
+		settings.Logoff_item_width = _wtol(str);
+	else
+		settings.Logoff_item_width = 50;
+
+	Sprintf(name2, _countof(name2), L"Secondary_label_colors", name);
+	if (LoadSkinColors(parser, name2, settings.secondaryLabelColors, _countof(settings.secondaryLabelColors), backgroundColor))
+	{
+	}
+	else if (pDefaults)
+		memcpy(settings.secondaryLabelColors, pDefaults->secondaryLabelColors, sizeof(settings.secondaryLabelColors));
+	else
+	{
+		settings.secondaryLabelColors[0] = GetSysColor(COLOR_MENUTEXT);
+		settings.secondaryLabelColors[1] = GetSysColor(COLOR_HIGHLIGHTTEXT);
+	}
+	Sprintf(name2, _countof(name2), L"ShutdownLogoff_label_colors", name);
+	if (LoadSkinColors(parser, name2, settings.bottomActionColors, _countof(settings.bottomActionColors), backgroundColor))
+	{
+	}
+	else if (pDefaults)
+		memcpy(settings.bottomActionColors, pDefaults->bottomActionColors, sizeof(settings.bottomActionColors));
+	else
+	{
+		settings.bottomActionColors[0] = GetSysColor(COLOR_MENUTEXT);
+		settings.bottomActionColors[1] = GetSysColor(COLOR_HIGHLIGHTTEXT);
 	}
 
 	Sprintf(name2,_countof(name2), L"%s_glow_size", name);
@@ -2170,9 +2232,8 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 
 
 		// ICON_SIZE_SMALL, ICON_SIZE_MEDIUM, ICON_SIZE_LARGE, ICON_SIZE_NONE, 
-		Main_icon_size = ParseIconSize(parser.FindSetting(L"Main_icon_size"));
-		Main2_icon_size = ParseIconSize(parser.FindSetting(L"Main2_icon_size"));
-
+		Main_icon_size = ParseIconSize(parser.FindSetting(L"Main_icon_size")); // 1st Column (MFU/Recent Programs/Pinned etc..)
+		Main2_icon_size = ParseIconSize(parser.FindSetting(L"Main2_icon_size")); // 2nd Column (PlacesList)
 		str = parser.FindSetting(L"Main_large_icons");
 		BOOL Main_large_icons2 = (str && _wtol(str));
 		if (Main_large_icons2)
@@ -2187,9 +2248,9 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 				Main2_icon_size = ICON_SIZE_NONE;
 		}
 
-		if (Main_icon_size == ICON_SIZE_UNDEFINED)
+		if (Main_icon_size == ICON_SIZE_UNDEFINED) // Main_icon_size is undefined, use ICON_SIZE_SMALL
 			Main_icon_size = ICON_SIZE_SMALL;
-		if (Main2_icon_size == ICON_SIZE_UNDEFINED)
+		if (Main2_icon_size == ICON_SIZE_UNDEFINED) // Main2_icon_size is undefined, use the Main_icon_size
 			Main2_icon_size = Main_icon_size;
 
 
@@ -2431,6 +2492,46 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 		}
 		if (!LoadSkinColors(parser, L"Search_text_background", &Search_text_background, 1, Main_background))
 			Search_text_background = GetSysColor(COLOR_WINDOW);
+
+		if (skinType != SKIN_TYPE_WIN7)
+		{
+			// PROGRAMSXP SECTION
+			str=parser.FindSetting(L"ProgramsXP_background");
+			if (str && _wcsicmp(str,L"transparent")==0)
+				ProgramsXP_background=0;
+			else
+			{
+				if (!LoadSkinColors(parser,L"ProgramsXP_background",&ProgramsXP_background,1,Main_background,NUMBERS_COLORS_ABGR))
+					ProgramsXP_background=GetSysColor(COLOR_WINDOW);
+
+				// premultiply alpha
+				int a=ProgramsXP_background>>24;
+				if (a==0)
+					ProgramsXP_background|=0xFF000000;
+				else if (a<255)
+				{
+					int r=(ProgramsXP_background&255)*a/255;
+					int g=((ProgramsXP_background>>8)&255)*a/255;
+					int b=((ProgramsXP_background>>16)&255)*a/255;
+					ProgramsXP_background=(a<<24)|(b<<16)|(g<<8)|r;
+				}
+			}
+			if (!LoadSkinItem(hMod, parser, L"ShutdownBox", ItemSettings[SHUTDOWN_BOX],
+			                  &ItemSettings[LIST_ITEM], Programs_background, bRTL))
+				return false;
+			if (!LoadSkinItem(hMod, parser, L"ProgramsXP", ItemSettings[PROGRAMSXP],
+			                  &ItemSettings[COLUMN1_ITEM], Programs_background, bRTL))
+				return false;
+			if (!LoadSkinItem(hMod, parser, L"ProgramsXP_new", ItemSettings[PROGRAMSXP_NEW],
+			                  &ItemSettings[COLUMN1_NEW], Programs_background, bRTL))
+				return false;
+			if (!LoadSkinBitmap(hMod, parser, L"ProgramsXP_icon", ProgramsXP_icon, &ProgramsXP_icon_size, bRTL))
+				return false;
+			if (!LoadSkinBitmap(hMod, parser, L"Shutdown_icon", Shutdown_icon, &Shutdown_icon_size, bRTL))
+				return false;
+			if (!LoadSkinBitmap(hMod, parser, L"Logoff_icon", Logoff_icon, &Logoff_icon_size, bRTL))
+				return false;
+		}
 
 		if (skinType == SKIN_TYPE_WIN7)
 		{
@@ -3074,6 +3175,7 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 	ItemSettings[COLUMN2_INLINE].bmpIconFrame.bIsOwned = false;
 	ItemSettings[COLUMN2_INLINE].bmpSeparator.bIsOwned = false;
 
+
 	HDC hdc = CreateCompatibleDC(NULL);
 	HGDIOBJ font0 = GetCurrentObject(hdc,OBJ_FONT);
 	for (int i = 0; i < _countof(ItemSettings); i++)
@@ -3145,7 +3247,15 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 					settings.iconPadding.right += dx;
 			}
 			break;
-
+		case PROGRAMSXP:
+			settings.iconSize=ICON_SIZE_MEDIUM;
+			if (ProgramsXP_icon.GetBitmap())
+			{
+				int dx = ICON_SIZE_MEDIUM - ProgramsXP_icon_size.cx;
+			if (dx > 0)
+				settings.iconPadding.right += dx;
+			}
+			break;
 		case SHUTDOWN_BUTTON:
 			settings.iconSize = ICON_SIZE_NONE;
 			settings.opacity = Main2_opacity;

@@ -179,9 +179,17 @@ struct MenuSkin
 		PROGRAMS_BUTTON_NEW,
 		PROGRAMS_CASCADING,
 		PROGRAMS_CASCADING_NEW,
+		PROGRAMSXP,
+		PROGRAMSXP_NEW,
 		SHUTDOWN_BUTTON,
 		SHUTDOWN_BUTTON_SEARCH,
 		SHUTDOWN_BUTTON_JUMP,
+
+		// new items added for XP-style shutdown and logoff
+		SHUTDOWN_BOX,
+		LOGOFF,
+		LOGOFF_CONFIRM,
+
 		LIST_ITEM,
 		LIST_SPLIT,
 		LIST_SEPARATOR,
@@ -204,7 +212,9 @@ struct MenuSkin
 	{
 		// text
 		HFONT font;
+		HFONT boldFont;
 		bool bOwnFont;
+		bool isBold;
 		int glowSize;
 		COLORREF textColors[4]; // normal, selected, disabled, disabled+selected
 		COLORREF textShadowColors[4];
@@ -214,6 +224,12 @@ struct MenuSkin
 		MenuBitmap bmpSelection;
 		int selSlicesX[6]; // 3 for normal, 6 for split selection
 		int selSlicesY[3];
+
+		COLORREF secondaryLabelColors[2]; // normal, selected
+		COLORREF bottomActionColors[2]; // normal, selected
+		int Shutdown_item_width;
+		int Logoff_item_width;
+
 
 		// arrow
 		MenuBitmap bmpArrow;
@@ -395,6 +411,16 @@ struct MenuSkin
 	SIZE Programs_icon_size;
 	MenuBitmap Programs_icon_selected;
 
+	// PROGRAMSXP SECTION
+	COLORREF ProgramsXP_background;
+	int ProgramsXP_indent;
+	MenuBitmap ProgramsXP_icon;
+	SIZE ProgramsXP_icon_size;
+	MenuBitmap ProgramsXP_icon_selected;
+	MenuBitmap Shutdown_icon;
+	SIZE Shutdown_icon_size;
+	MenuBitmap Logoff_icon;
+	SIZE Logoff_icon_size;
 	// SCROLLBAR SECTION
 	MenuBitmap Scrollbar_button;
 	int Scrollbar_button_slices_X[3];

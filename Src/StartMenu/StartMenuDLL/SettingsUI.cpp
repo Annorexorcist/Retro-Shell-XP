@@ -1046,6 +1046,10 @@ static const CStdCommand g_StdCommands[] = {
 	{L"COLUMN_BREAK",IDS_COLUMN_BREAK_ITEM,IDS_BREAK_TIP},
 	{L"COLUMN_PADDING",IDS_COLUMN_PADDING_ITEM,IDS_PADDING_TIP},
 	{
+		L"progsxp",IDS_PROGRAMSXP_ITEM,IDS_PROGRAMSXP_TIP, L"ProgramsXPMenu", L"$Menu.ProgramsXP", L"$Menu.ProgramsXPTip",
+		L"shell32.dll,326", &FOLDERID_Programs, StdMenuItem::MENU_TRACK
+	},
+	{
 		L"programs",IDS_PROGRAMS_ITEM,IDS_PROGRAMS_TIP, L"ProgramsMenu", L"$Menu.Programs", L"$Menu.ProgramsTip",
 		L"shell32.dll,326", &FOLDERID_Programs, StdMenuItem::MENU_TRACK
 	},
@@ -4784,7 +4788,8 @@ CSetting g_Settings[] = {
 	{L"LargeIconSize", CSetting::TYPE_INT,IDS_LARGE_SIZE_SM,IDS_LARGE_SIZE_SM_TIP, -1, CSetting::FLAG_COLD},
 	// 32 for DPI<=96, 40 for DPI<=120, 48 otherwise
 	{L"InvertMetroIcons", CSetting::TYPE_BOOL,IDS_INVERT_ICONS,IDS_INVERT_ICONS_TIP, 0},
-	{L"MaxMainMenuWidth", CSetting::TYPE_INT,IDS_MENU_WIDTH,IDS_MENU_WIDTH_TIP, 60, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"MaxMainMenuWidth", CSetting::TYPE_INT,IDS_MENU_WIDTH,IDS_MENU_WIDTH_TIP, 0, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"MaxMainMenu2Width", CSetting::TYPE_INT,IDS_MENU2_WIDTH,IDS_MENU2_WIDTH_TIP, 0, CSetting::FLAG_MENU_CLASSIC_BOTH},
 	{L"MaxMenuWidth", CSetting::TYPE_INT,IDS_SUBMENU_WIDTH,IDS_SUBMENU_WIDTH_TIP, 60},
 	{L"AlignToWorkArea", CSetting::TYPE_BOOL,IDS_ALIGN_WORK_AREA,IDS_ALIGN_WORK_AREA_TIP, 0},
 	{L"HorizontalMenuOffset", CSetting::TYPE_INT,IDS_HOR_OFFSET,IDS_HOR_OFFSET_TIP, 0},

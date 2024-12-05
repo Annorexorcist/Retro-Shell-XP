@@ -20,8 +20,164 @@
 #include <algorithm>
 #include <math.h>
 #include <chrono>
+#include <windows.h>
+#include <gdiplus.h>
+#include <memory>
+#include <vector>
+#include <cmath>
+#pragma comment(lib, "gdiplus.lib")
+
+using namespace Gdiplus;
+
 
 static BLENDFUNCTION g_AlphaFunc = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+
+std::vector<std::vector<float>> CreateGaussianKernel(int radius, float sigma) {
+	int size = 2 * radius + 1;
+	std::vector<std::vector<float>> kernel(size, std::vector<float>(size));
+	float sum = 0.0f;
+
+	for (int y = -radius; y <= radius; ++y) {
+		for (int x = -radius; x <= radius; ++x) {
+			float value = exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * 3.14159 * sigma * sigma);
+			kernel[y + radius][x + radius] = value;
+			sum += value;
+		}
+	}
+
+	// Normalize the kernel
+	for (int y = 0; y < size; ++y) {
+		for (int x = 0; x < size; ++x) {
+			kernel[y][x] /= sum;
+		}
+	}
+
+	return kernel;
+}
+
+void InitializeGDIPlus() {
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR gdiplusToken;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+}
+
+void ShutdownGDIPlus(ULONG_PTR gdiplusToken) {
+	GdiplusShutdown(gdiplusToken);
+}
+
+void ApplyGaussianBlur(Bitmap* bitmap, int radius) {
+	int width = bitmap->GetWidth();
+	int height = bitmap->GetHeight();
+	BitmapData bitmapData;
+	Rect rect(0, 0, width, height);
+
+	bitmap->LockBits(&rect, ImageLockModeRead | ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData);
+
+	UINT* pixels = (UINT*)bitmapData.Scan0;
+	std::vector<UINT> originalPixels(pixels, pixels + width * height);
+
+	auto kernel = CreateGaussianKernel(radius, radius / 2.0f);
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			float r = 0, g = 0, b = 0, a = 0;
+			for (int ky = -radius; ky <= radius; ++ky) {
+				for (int kx = -radius; kx <= radius; ++kx) {
+					int ix = std::clamp(x + kx, 0, width - 1);
+					int iy = std::clamp(y + ky, 0, height - 1);
+					UINT pixel = originalPixels[iy * width + ix];
+					float weight = kernel[ky + radius][kx + radius];
+
+					a += weight * ((pixel >> 24) & 0xFF);
+					r += weight * ((pixel >> 16) & 0xFF);
+					g += weight * ((pixel >> 8) & 0xFF);
+					b += weight * (pixel & 0xFF);
+				}
+			}
+
+			pixels[y * width + x] = ((UINT)a << 24) | ((UINT)r << 16) | ((UINT)g << 8) | (UINT)b;
+		}
+	}
+
+	bitmap->UnlockBits(&bitmapData);
+}
+
+void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFONT font, COLORREF glowColor, int glowSize, DTTOPTS opts, DTTOPTS optsText)
+{
+	// Initialize GDI+ if not already initialized
+	static bool gdiPlusInitialized = false;
+	static ULONG_PTR gdiplusToken;
+	if (!gdiPlusInitialized) {
+		InitializeGDIPlus();
+		gdiPlusInitialized = true;
+	}
+		
+	// Create a temporary bitmap
+	int width = rect.right - rect.left;
+	int height = rect.bottom - rect.top;
+	std::unique_ptr<Bitmap> bitmap(new Bitmap(width, height, PixelFormat32bppARGB));
+	Graphics graphics(bitmap.get());
+	Gdiplus::SolidBrush brush_tr(Gdiplus::Color::Transparent);
+	graphics.FillRectangle(&brush_tr, 0,0,width,height);
+
+	// Create a GDI+ font from the HFONT
+	Font gdiFont(hdc, font);
+
+	// Create a GDI+ brush for the glow color
+	Color glowColorGdi(GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
+	SolidBrush glowBrush(glowColorGdi);
+
+	// Create a GDI+ string format
+	StringFormat stringFormat;
+	stringFormat.SetAlignment(StringAlignmentNear);
+	stringFormat.SetLineAlignment(StringAlignmentNear);
+
+	// Create a GDI+ rectangle from the RECT
+	RectF gdiRect(0, 10, static_cast<REAL>(width), static_cast<REAL>(height));
+
+	Graphics hdcGraphics(hdc);
+
+	// added a check to not attempt to draw a glow if the glowSize is set to 0
+	if (glowSize > 0)
+	{
+		// Draw the text onto the bitmap
+		graphics.DrawString(text, -1, &gdiFont, gdiRect, &stringFormat, &glowBrush);
+
+		// Apply Gaussian blur to the bitmap
+		ApplyGaussianBlur(bitmap.get(), glowSize);
+
+
+		// Unpremultiply alpha directly in the bitmap
+		BitmapData bitmapData;
+		Rect lockRect(0, 0, width, height);
+		bitmap->LockBits(&lockRect, ImageLockModeRead | ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData);
+
+		UINT* pixels = reinterpret_cast<UINT*>(bitmapData.Scan0);
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				UINT& pixel = pixels[y * (bitmapData.Stride / sizeof(UINT)) + x];
+
+				UINT alpha = (pixel >> 24) & 0xFF;
+				if (alpha > 0) {
+					float alphaNorm = alpha / 255.0f;
+
+					UINT red = static_cast<UINT>(std::clamp(((pixel >> 16) & 0xFF) / alphaNorm, 0.0f, 255.0f));
+					UINT green = static_cast<UINT>(std::clamp(((pixel >> 8) & 0xFF) / alphaNorm, 0.0f, 255.0f));
+					UINT blue = static_cast<UINT>(std::clamp((pixel & 0xFF) / alphaNorm, 0.0f, 255.0f));
+
+					pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+				}
+			}
+		}
+		bitmap->UnlockBits(&bitmapData);
+		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
+		InflateRect(&rect,-glowSize,-glowSize);
+	}
+
+	DrawThemeTextEx(theme, hdc, 0, 0, text, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rect, &optsText);
+}
+
 
 MIDL_INTERFACE("4BEDE6E0-A125-46A7-A3BF-4187165E09A5")
 	IUserTileStore8 : public IUnknown
@@ -1055,34 +1211,13 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			textWidth - s_Skin.Caption_padding.top,
 			textHeight - (s_bRTL ? s_Skin.Caption_padding.left : s_Skin.Caption_padding.right)
 		};
-		if (s_Theme && s_Skin.Caption_glow_size > 0)
+		if (s_Theme)
 		{
-			// draw the glow
-			opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
-			opts.crText = 0xFFFFFF;
-			opts.iGlowSize = s_Skin.Caption_glow_size;
-			DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, caption, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rc, &opts);
-			SelectObject(hdcTemp, bmp02); // deselect bmpText so all the GDI operations get flushed
-
-			// change the glow color
-			int gr = (s_Skin.Caption_glow_color) & 255;
-			int gg = (s_Skin.Caption_glow_color >> 8) & 255;
-			int gb = (s_Skin.Caption_glow_color >> 16) & 255;
-			for (int y = 0; y < textHeight; y++)
-				for (int x = 0; x < textWidth; x++)
-				{
-					unsigned int& pixel = bits2[y * textWidth + x];
-					int a1 = (pixel >> 24);
-					int r1 = (pixel >> 16) & 255;
-					int g1 = (pixel >> 8) & 255;
-					int b1 = (pixel) & 255;
-					r1 = (r1 * gr) / 255;
-					g1 = (g1 * gg) / 255;
-					b1 = (b1 * gb) / 255;
-					pixel = (a1 << 24) | (r1 << 16) | (g1 << 8) | b1;
-				}
-
-			SelectObject(hdcTemp, bmpText);
+			COLORREF glowColor = RGB((s_Skin.Caption_glow_color) & 0xFF, (s_Skin.Caption_glow_color >> 8) & 0xFF, s_Skin.Caption_glow_color >> 16 & 0xFF);
+			DTTOPTS optsText = opts;
+			optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
+			optsText.crText = s_Skin.Caption_text_color;
+			DrawTextWithCustomGlow(s_Theme, hdcTemp, caption, rc, s_Skin.Caption_font, glowColor, s_Skin.Caption_glow_size, opts, optsText);
 		}
 
 		// draw the text
@@ -1320,37 +1455,13 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			else if (s_Skin.User_name_align == MenuSkin::HALIGN_RIGHT || s_Skin.User_name_align ==
 				MenuSkin::HALIGN_RIGHT1 || s_Skin.User_name_align == MenuSkin::HALIGN_RIGHT2)
 				align = s_bRTL ? DT_LEFT : DT_RIGHT;
-			if (s_Theme && s_Skin.User_glow_size > 0)
-			{
-				InflateRect(&rc, -s_Skin.User_glow_size, -s_Skin.User_glow_size);
-				// draw the glow
-				opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
-				opts.crText = 0xFFFFFF;
-				opts.iGlowSize = s_Skin.User_glow_size;
-				DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
-				                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
-				                &opts);
-				SelectObject(hdcTemp, bmp02); // deselect bmpText so all the GDI operations get flushed
-
-				// change the glow color
-				int gr = (s_Skin.User_glow_color) & 255;
-				int gg = (s_Skin.User_glow_color >> 8) & 255;
-				int gb = (s_Skin.User_glow_color >> 16) & 255;
-				for (int y = 0; y < nameHeight; y++)
-					for (int x = 0; x < nameWidth; x++)
+			if (s_Theme)
 					{
-						unsigned int& pixel = bits2[y * nameWidth + x];
-						int a1 = (pixel >> 24);
-						int r1 = (pixel >> 16) & 255;
-						int g1 = (pixel >> 8) & 255;
-						int b1 = (pixel) & 255;
-						r1 = (r1 * gr) / 255;
-						g1 = (g1 * gg) / 255;
-						b1 = (b1 * gb) / 255;
-						pixel = (a1 << 24) | (r1 << 16) | (g1 << 8) | b1;
-					}
-
-				SelectObject(hdcTemp, bmpText);
+				COLORREF glowColor = RGB(s_Skin.User_glow_color & 0xFF, (s_Skin.User_glow_color >> 8) & 0xFF, (s_Skin.User_glow_color >> 16) & 0xFF);
+				DTTOPTS optsText = opts;
+				optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
+				optsText.crText = s_Skin.User_text_color;
+				DrawTextWithCustomGlow(s_Theme, hdcTemp, name, rc, s_Skin.User_font, glowColor, s_Skin.User_glow_size, opts, optsText);
 			}
 
 			// draw the text
@@ -1362,9 +1473,10 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			{
 				opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
 				opts.crText = s_Skin.User_text_color;
-				DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
-				                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
-				                &opts);
+				// we draw the text in DrawTextWithCustomGlow now
+				//DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
+				//                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
+				//                &opts);
 				SelectObject(hdcTemp, bmp02);
 
 				// copy the text onto the final bitmap. Combine the alpha channels
@@ -1872,7 +1984,6 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			if (!IntersectRect(&q, &drawRect, &itemRect))
 				continue;
 		}
-
 		bool bHot = (index == m_HotItem || index == m_SubJumpItem || (m_HotItem == -1 && (index == m_Submenu || index ==
 			m_ContextItem)));
 		bool bSplit = false;
@@ -1889,6 +2000,8 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				drawType = MenuSkin::PROGRAMS_BUTTON;
 			else if (drawType == MenuSkin::PROGRAMS_CASCADING_NEW)
 				drawType = MenuSkin::PROGRAMS_CASCADING;
+			else if (drawType==MenuSkin::PROGRAMSXP_NEW)
+				drawType=MenuSkin::PROGRAMSXP;
 			else if (drawType == MenuSkin::SUBMENU_NEW)
 				drawType = MenuSkin::SUBMENU_ITEM;
 
@@ -1900,7 +2013,6 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 					drawType = MenuSkin::COLUMN2_ITEM;
 			}
 		}
-
 		if (item.id == MENU_SEARCH_BOX)
 		{
 			itemRect.left = itemRect.right - (itemRect.bottom - itemRect.top);
@@ -2383,6 +2495,56 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				SelectObject(hdc2, bmp0);
 			}
 		}
+		if (drawType==MenuSkin::PROGRAMSXP || drawType==MenuSkin::PROGRAMSXP_NEW)
+		{
+			if (s_Skin.ProgramsXP_icon.GetBitmap())
+			{
+				int iconXP_X = ((itemRect.left + itemRect.right) / 2) + settings.iconPadding.left + settings.iconPadding.right;
+				int iconXP_Y = itemRect.top + settings.iconPadding.top + settings.iconTopOffset;
+				const MenuBitmap& iconXP = s_Skin.ProgramsXP_icon;
+				HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+				if (iconXP.bIs32)
+				{
+					BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+					if (bHot)
+					{
+						AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy / 2, hdc2, 0,
+							s_Skin.ProgramsXP_icon_size.cy / 2, s_Skin.ProgramsXP_icon_size.cx,
+							s_Skin.ProgramsXP_icon_size.cy / 2, func2);
+					}
+					else
+					{
+						AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy / 2, hdc2, 0,
+							0, s_Skin.ProgramsXP_icon_size.cx,
+							s_Skin.ProgramsXP_icon_size.cy / 2, func2);
+					}
+				}
+				else
+					BitBlt(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy, hdc2, 0,
+					      0, SRCCOPY);
+				SelectObject(hdc2, bmp0);
+			}
+			else
+			{
+				const POINT* sizes = s_Skin.GetArrowsBitmapSizes();
+				SIZE s = {sizes[4].y - sizes[4].x, sizes[6].y};
+				int x = itemRect.left + settings.arrPadding.cx;
+				int y = (itemRect.top + itemRect.bottom - s.cy) / 2;
+				HGDIOBJ bmp0 = SelectObject(hdc2, GetArrowsBitmap(settings.arrColors[bHot ? 1 : 0]));
+				BLENDFUNCTION func = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+				if (s_MenuMode == MODE_PROGRAMS)
+				{
+					AlphaBlend(hdc, x, y, s.cx, s.cy, hdc2, s_bRTL ? sizes[6].x - sizes[3].y : sizes[4].x, 0, s.cx,
+					           s.cy, func);
+				}
+				else
+				{
+					AlphaBlend(hdc, x, y, s.cx, s.cy, hdc2, s_bRTL ? sizes[6].x - sizes[4].y : sizes[3].x, 0, s.cx,
+					           s.cy, func);
+				}
+				SelectObject(hdc2, bmp0);
+			}
+		}
 		else if (item.pItemInfo && !bNoIcon)
 		{
 			int iconX = itemRect.left + settings.iconPadding.left;
@@ -2469,6 +2631,28 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			itemRect.right - settings.arrPadding.cx - settings.arrPadding.cy - settings.textPadding.right,
 			itemRect.bottom - settings.textPadding.bottom
 		};
+		if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+		{
+
+			int centerY = (itemRect.top + itemRect.bottom) / 2;
+			int textHeight = settings.textMetrics.tmHeight+settings.textPadding.top+settings.textPadding.bottom; // Example font height, adjust as needed.
+			int newTop = centerY - (textHeight / 2);
+			int newBottom = centerY + (textHeight / 2);
+
+			rc = {
+				itemRect.left + settings.iconPadding.left + settings.iconPadding.right + settings.iconPadding.right,
+				newTop,
+				itemRect.right,
+				newBottom
+			};
+		}
+		if (item.id==MENU_PROGRAMSXP)
+			rc = { 
+			itemRect.left+settings.textPadding.left,
+			itemRect.top+settings.textPadding.top,
+			itemRect.right-settings.textPadding.right,
+			itemRect.bottom-settings.textPadding.bottom
+		};
 		if (item.id == MENU_SHUTDOWN_BUTTON)
 		{
 			if (s_bHasUpdates && s_Skin.Shutdown_bitmap.GetBitmap())
@@ -2490,7 +2674,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			flags |= DT_HIDEPREFIX;
 
 		CString name;
-		if (drawType == MenuSkin::PROGRAMS_BUTTON || drawType == MenuSkin::PROGRAMS_BUTTON_NEW || drawType ==
+		if (s_bWin7Style && drawType == MenuSkin::PROGRAMS_BUTTON || drawType == MenuSkin::PROGRAMS_BUTTON_NEW || drawType ==
 			MenuSkin::PROGRAMS_CASCADING || drawType == MenuSkin::PROGRAMS_CASCADING_NEW)
 			name = s_MenuMode == MODE_PROGRAMS
 				       ? FindTranslation(L"Menu.Back", L"Back")
@@ -2531,8 +2715,104 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				OffsetRect(&rc2, 1, 1);
 				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc2, &opts);
 			}
+
+			if (item.hasInternetSecondLabel == true)
+			{
+				int posNeticonText = name.Find(L"neticon");
+
+				if (posNeticonText != -1)
+				{
+					name.Delete(posNeticonText, 7);  // Remove ending "neticon" text
+				}
+				// Define text options for primary and secondary labels
+				DTTOPTS dttOpts = { sizeof(DTTOPTS) };
+				dttOpts.dwFlags = DTT_TEXTCOLOR | DTT_COMPOSITED;
+
+				dttOpts.crText = color;
+
+				RECT secondaryRect = itemRect;
+				secondaryRect.top += 5;
+				secondaryRect.left = rc.left;
+
+				RECT primaryRect = secondaryRect;
+				primaryRect.bottom += 5;
+				primaryRect.left = rc.left;
+
+
+				DTTOPTS optsTemp1 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
+				if (bHot)
+					optsTemp1.crText = settings.secondaryLabelColors[1];
+				else
+					optsTemp1.crText = settings.secondaryLabelColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &primaryRect, &optsTemp1);
+				SelectObject(hdc, settings.boldFont);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabel, -1,
+					DT_LEFT | DT_SINGLELINE | DT_NOPREFIX,
+					&secondaryRect, &dttOpts);
+				SelectObject(hdc, settings.font);
+			}
+			else if (item.hasEmailSecondLabel == true)
+			{
+				int posYesmailText = name.Find(L"yesmail");
+
+				if (posYesmailText != -1)
+				{
+					name.Delete(posYesmailText, 7);  // Remove ending "neticon" text
+				}
+				// Define text options for primary and secondary labels
+				DTTOPTS dttOptsEmail = { sizeof(DTTOPTS) };
+				dttOptsEmail.dwFlags = DTT_TEXTCOLOR | DTT_COMPOSITED;
+
+				dttOptsEmail.crText = color;
+
+				RECT secondaryRectEmail = itemRect;
+				secondaryRectEmail.top += 5;
+				secondaryRectEmail.left = rc.left;
+
+				RECT primaryRectEmail = secondaryRectEmail;
+				primaryRectEmail.bottom += 5;
+				primaryRectEmail.left = rc.left;
+
+				DTTOPTS optsTemp2 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
+				if (bHot)
+					optsTemp2.crText = settings.secondaryLabelColors[1];
+				else
+					optsTemp2.crText = settings.secondaryLabelColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &primaryRectEmail, &optsTemp2);
+				SelectObject(hdc, settings.boldFont);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabelEmail , -1,
+					DT_LEFT | DT_SINGLELINE | DT_NOPREFIX,
+					&secondaryRectEmail, &dttOptsEmail);
+				SelectObject(hdc, settings.font);
+			}
+			if (item.isBold)
+			{
+				int posBoldText = name.Find(L"bold");
+				if (posBoldText != -1)
+				{
+					name.Delete(posBoldText, 4);  // Remove ending "bold" text
+				}
+				SelectObject(hdc, settings.boldFont);
+			}
+			else
+				SelectObject(hdc, settings.font);
+
+			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				//s_Skin.
+				rc.right += 25;
+				if (bHot)
+					opts.crText = settings.bottomActionColors[1];
+				else
+					opts.crText = settings.bottomActionColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc, &opts);
+			}
+			else if (item.hasEmailSecondLabel != true && item.hasInternetSecondLabel != true && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+			{
+				opts.dwFlags |= DTT_COMPOSITED;
 			opts.crText = color;
 			DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc, &opts);
+		}
 		}
 		else
 		{
@@ -2543,12 +2823,15 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				SetTextColor(hdc, shadowColor);
 				DrawText(hdc, item.name, item.name.GetLength(), &rc, flags);
 			}
-
+			if (item.isBold)
+				SelectObject(hdc, settings.boldFont);
+			else
+				SelectObject(hdc, settings.font);
 			SetTextColor(hdc, color);
 			DrawText(hdc, name, name.GetLength(), &rc, flags);
 		}
 
-		if (item.bFolder && drawType != MenuSkin::PROGRAMS_BUTTON && drawType != MenuSkin::PROGRAMS_BUTTON_NEW)
+		if (item.bFolder && drawType != MenuSkin::PROGRAMSXP && drawType != MenuSkin::PROGRAMSXP_NEW && drawType != MenuSkin::PROGRAMS_BUTTON && drawType != MenuSkin::PROGRAMS_BUTTON_NEW)
 		{
 			// draw the sub-menu arrows
 			bool bHotArrow = (bHot && !bSplit) || stateRight > 0;

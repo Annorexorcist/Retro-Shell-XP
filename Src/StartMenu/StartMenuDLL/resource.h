@@ -101,6 +101,8 @@
 #define IDC_SKIN_CLASSIC2               1087
 #define IDC_SKIN_WIN7                   1088
 #define IDC_STATICEDGE2                 1089
+#define IDS_PROGRAMSXP_ITEM             1469
+#define IDS_PROGRAMSXP_TIP              1470
 #define IDD_CUSTOMMENU                  3001
 #define IDS_APP_TITLE                   3001
 #define IDD_SKINSETTINGS                3002
@@ -787,6 +789,8 @@
 #define IDS_ALT_ACCELERATORS            3688
 #define IDS_ALT_ACCELERATORS_TIP        3689
 #define IDS_CLASSIC_BUTTON_XP			3690
+#define IDS_MENU2_WIDTH                 3691
+#define IDS_MENU2_WIDTH_TIP             3692
 #define IDS_STRING7001                  7001
 #define IDS_STRING7002                  7002
 #define IDS_STRING7003                  7003
