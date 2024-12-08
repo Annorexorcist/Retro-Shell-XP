@@ -4914,7 +4914,7 @@ CSetting g_Settings[] = {
 		L"#StartButtonType=1", L"ClasicButton"
 	},
 	{
-		L"XPButton", CSetting::TYPE_BOOL,IDS_CLASSIC_BUTTON_XP,IDS_CLASSIC_BUTTON_TIP, L"$Menu.StartXP", 0,
+		L"XPButton", CSetting::TYPE_BOOL,IDS_CLASSIC_BUTTON_XP,IDS_CLASSIC_BUTTON_TIP, 0, 0,
 		L"#StartButtonType=1", L"ClasicButton"
 	},
 

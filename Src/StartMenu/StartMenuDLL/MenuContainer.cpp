@@ -5519,7 +5519,7 @@ LRESULT CMenuContainer::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 				if (m_HoverItem == m_ProgramTreeIndex)
 					m_pProgramsTree->SetFocus();
 				ActivateItem(m_HoverItem, ACTIVATE_OPEN,NULL);
-				m_SubShowTime = GetTickCount();
+				m_SubShowTime = GetTickCount64();
 			}
 			if (m_HoverItem == m_ProgramButtonIndex)
 				m_bDisableProgHover = true;
