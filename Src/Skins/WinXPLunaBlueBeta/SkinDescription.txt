@@ -19,6 +19,8 @@ ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
 
 User_name_position=65,22,-15,55
 User_name_align=left
+User_glow_offset=0,2
+User_glow_opacity=255
 User_font="Franklin Gothic Medium",normal,18
 User_text_color=#FFFFFF
 ; Caption_glow_color - RRGGBB color of the caption glow. Defaults to white
