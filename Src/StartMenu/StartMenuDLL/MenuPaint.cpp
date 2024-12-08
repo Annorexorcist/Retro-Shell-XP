@@ -184,42 +184,15 @@ void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFON
 				}
 			}
 		}
-
-		// unlock the bitmap data so we can render the real text
 		bitmap->UnlockBits(&bitmapData);
-
-		// get the RGB values from the DTTOPTS variable and use 255 as alpha since we're not using a changeable value
-		SolidBrush textBrush(Color(255, GetRValue(optsText.crText), GetGValue(optsText.crText), GetBValue(optsText.crText)));
-
-		if (setting == CLEARTYPE_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
-
-		else if (setting == ANTIALIASED_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
-
-		else if (setting == NONANTIALIASED_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintSingleBitPerPixel);
-
-		else if (setting == DEFAULT_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
-
-		graphics.DrawString(text, -1, &gdiFont, textRect, &stringFormat, &textBrush);
 		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
+		//InflateRect(&rect,-glowSize,-glowSize);
 	}
-	else // glowSize is set to 0, don't bother with the calculations for it
-	{
-		SolidBrush textBrush(Color(255, GetRValue(optsText.crText), GetGValue(optsText.crText), GetBValue(optsText.crText)));
-
-		if (setting == ANTIALIASED_QUALITY || setting == CLEARTYPE_QUALITY || setting == DEFAULT_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
-
-		else if (setting == NONANTIALIASED_QUALITY)
-			graphics.SetTextRenderingHint(TextRenderingHintSingleBitPerPixel);
-
-		graphics.DrawString(text, -1, &gdiFont, textRect, &stringFormat, &textBrush);
-		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
-	}
+	rect.top -= 9;
+	rect.left += 3;
+	DrawThemeTextEx(theme, hdc, 0, 0, text, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rect, &optsText);
 }
+
 
 
 MIDL_INTERFACE("4BEDE6E0-A125-46A7-A3BF-4187165E09A5")
@@ -2846,8 +2819,6 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 
 			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 			{
-				//s_Skin.
-				rc.right += 25;
 				if (bHot)
 					opts.crText = settings.bottomActionColors[1];
 				else

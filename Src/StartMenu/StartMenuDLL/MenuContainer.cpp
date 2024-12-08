@@ -3797,6 +3797,10 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 			}
 			else if (item.bInline && item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 			{
+				// HACKHACK - temporarily tell the menu it's not inline
+				// HACKHACK - in order to force the menu to let us use our own positions
+				// HACKHACK - we're bypassing the main bInLine setting function now
+				// bInline = false;
 
 				// width of items
 				// TODO - make these user-servicable parameters and not hard-coded
@@ -3805,7 +3809,7 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				const int logoffWidth = s_Skin.ItemSettings[MenuSkin::COLUMN2_ITEM].Logoff_item_width;
 
 				// HACKHACK - there's probably a better way to get menu width
-				int menuWidth = s_MenuWidthNormal+columnWidths[0] + columnWidths[1];
+				int menuWidth = s_MenuWidthNormal+columnWidths[0] + columnWidths[1]+ s_Skin.Main2_padding.right;
 				
 
 				// HACKHACK - track right edge of items
@@ -3815,13 +3819,13 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				if (item.id == MENU_SHUTDOWN_BOX)
 				{
 					// pin shutdown item to right side of menu
-					item.itemRect.right = menuWidth + s_Skin.Main2_padding.right;
+					item.itemRect.right = menuWidth;
 					item.itemRect.left = item.itemRect.right - shutdownWidth;
 					
 				}
 				else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 				{
-					item.itemRect.right = menuWidth - shutdownWidth;
+					item.itemRect.right = menuWidth - shutdownWidth-2;
 					item.itemRect.left = item.itemRect.right - logoffWidth;
 				}
 			}
