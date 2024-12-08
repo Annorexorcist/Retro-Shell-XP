@@ -421,6 +421,10 @@ struct MenuSkin
 	SIZE Shutdown_icon_size;
 	MenuBitmap Logoff_icon;
 	SIZE Logoff_icon_size;
+	int ProgramsXP_submenu_offset;
+	POINT User_name_glow_offset;
+	int User_name_glow_opacity;
+
 	// SCROLLBAR SECTION
 	MenuBitmap Scrollbar_button;
 	int Scrollbar_button_slices_X[3];

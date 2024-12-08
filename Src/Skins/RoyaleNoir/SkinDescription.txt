@@ -6,7 +6,7 @@ AboutIcon=1
 User_opacity=solid
 ; Version - version of the required skin engine. Set to 2 if the skin uses any of the new features introduced in Classic Shell 1.9.0 like full glass,
 ; skinnable sub-menus, skinnable pager buttons, skinnable arrows, etc
-Version=2
+Version=3
 
 
 ; XP-style shutdown and logoff button widths
@@ -17,7 +17,7 @@ Logoff_item_width=75
 Secondary_label_colors=#B3BFCD,#FFFFFF
 ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
 
-User_name_position=65,12,-15,55
+User_name_position=65,19,-15,55
 User_name_align=left
 User_font="Franklin Gothic Medium",normal,18
 User_text_color=#FFFFFF
@@ -96,8 +96,10 @@ Main2_split_selection_slices_X=4,1,1,1,1,2
 Main2_split_selection_slices_Y=2,1,2
 
 ProgramsXP_button_selection=4
+ProgramsXP_submenu_offset=45
 ProgramsXP_icon=4
-ProgramsXP_icon_padding=30,3,0,-3
+ProgramsXP_menu_offset=-4
+ProgramsXP_icon_padding=30,1,0,-2
 ProgramsXP_text_padding=15,8,0,8,100%
 ProgramsXP_font="Tahoma",bold,-8.5
 ProgramsXP_button_new_text_padding=0,0,0,0,100%
@@ -105,7 +107,7 @@ ProgramsXP_text_color=#FFFFFF,#FFFFFF,#7F7F7F,#7F7F7F
 
 ProgramsXP_new_button_selection=23
 ProgramsXP_new_icon=4
-ProgramsXP_new_icon_padding=30,3,0,-3
+ProgramsXP_new_icon_padding=30,1,0,-2
 ProgramsXP_new_text_padding=15,8,0,8,100%
 ProgramsXP_new_font="Tahoma",bold,-8.5
 ProgramsXP_new_text_color=#FFFFFF,#FFFFFF,#7F7F7F,#7F7F7F

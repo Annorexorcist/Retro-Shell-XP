@@ -791,6 +791,8 @@
 #define IDS_CLASSIC_BUTTON_XP			3690
 #define IDS_MENU2_WIDTH                 3691
 #define IDS_MENU2_WIDTH_TIP             3692
+#define IDS_PROGRAMSXP_OFFSET           3693
+#define IDS_PROGRAMSXP_OFFSET_TIP       3694
 #define IDS_STRING7001                  7001
 #define IDS_STRING7002                  7002
 #define IDS_STRING7003                  7003

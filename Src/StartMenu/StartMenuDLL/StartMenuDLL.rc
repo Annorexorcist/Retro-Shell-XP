@@ -634,6 +634,8 @@ BEGIN
     IDS_MENU2_WIDTH         "2nd column width"
     IDS_MENU_WIDTH_TIP      "Set width of the 1st main menu column"
     IDS_MENU2_WIDTH_TIP     "Set width of the 2nd main menu column"
+    IDS_PROGRAMSXP_OFFSET   "Submenu offset for XP-style Programs button"
+    IDS_PROGRAMSXP_OFFSET_TIP "Sets the offset of the Programs submenu when opened with the XP-style Programs button"
     IDS_SUBMENU_WIDTH       "Sub-menu width"
     IDS_SUBMENU_WIDTH_TIP   "Set the width of the sub-menu text to fit this many average-width characters"
     IDS_SAME_COLUMNS        "All columns are same size"

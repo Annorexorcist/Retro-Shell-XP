@@ -2495,6 +2495,16 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 
 		if (skinType != SKIN_TYPE_WIN7)
 		{
+			str = parser.FindSetting(L"User_glow_offset");
+			if (str)
+				LoadSkinNumbers(str, (int*)&User_name_glow_offset, 2, NUMBERS_OTHER);
+
+			str = parser.FindSetting(L"User_glow_opacity");
+			if (str)
+				User_name_glow_opacity = _wtol(str);
+			else
+				User_name_glow_opacity = 255;
+
 			// PROGRAMSXP SECTION
 			str=parser.FindSetting(L"ProgramsXP_background");
 			if (str && _wcsicmp(str,L"transparent")==0)
@@ -3255,6 +3265,10 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 			if (dx > 0)
 				settings.iconPadding.right += dx;
 			}
+			break;
+		case LOGOFF:
+		case LOGOFF_CONFIRM:
+			settings.iconSize=ICON_SIZE_MEDIUM;
 			break;
 		case SHUTDOWN_BUTTON:
 			settings.iconSize = ICON_SIZE_NONE;

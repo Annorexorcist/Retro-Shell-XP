@@ -17,7 +17,7 @@ Logoff_item_width=75
 Secondary_label_colors=#343434,#FFFFFF
 ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
 
-User_name_position=65,12,-15,55
+User_name_position=65,22,-15,55
 User_name_align=left
 User_font="Franklin Gothic Medium",normal,18
 User_text_color=#FFFFFF
@@ -35,7 +35,7 @@ Main_bitmap=2
 
 Main_opacity=alpha
 
-Main_bitmap_slices_X=16,194,12,12,200,10
+Main_bitmap_slices_X=16,194,12,12,190,10
 Main_bitmap_slices_Y=162,5,307
 
 

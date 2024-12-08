@@ -102,7 +102,7 @@ void ApplyGaussianBlur(Bitmap* bitmap, int radius) {
 	bitmap->UnlockBits(&bitmapData);
 }
 
-void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFONT font, COLORREF glowColor, int glowSize, DTTOPTS opts, DTTOPTS optsText)
+void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFONT font, COLORREF glowColor, int glowSize, DTTOPTS opts, DTTOPTS optsText, POINT glowOffset, int glowOpacity, int setting)
 {
 	// Initialize GDI+ if not already initialized
 	static bool gdiPlusInitialized = false;
@@ -131,29 +131,32 @@ void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFON
 	StringFormat stringFormat;
 	stringFormat.SetAlignment(StringAlignmentNear);
 	stringFormat.SetLineAlignment(StringAlignmentNear);
+	graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
 	// Create a GDI+ rectangle from the RECT
-	RectF gdiRect(0, 10, static_cast<REAL>(width), static_cast<REAL>(height));
+	RectF gdiRect(glowOffset.x, glowOffset.y, static_cast<REAL>(width), static_cast<REAL>(height));
+	RectF textRect(rect.left, rect.top, rect.right, rect.bottom);
 
 	Graphics hdcGraphics(hdc);
 
 	// added a check to not attempt to draw a glow if the glowSize is set to 0
 	if (glowSize > 0)
 	{
-		// Draw the text onto the bitmap
+		// draw the text that's to be blurred
 		graphics.DrawString(text, -1, &gdiFont, gdiRect, &stringFormat, &glowBrush);
 
-		// Apply Gaussian blur to the bitmap
+		// apply the gaussian blur to the bitmap
 		ApplyGaussianBlur(bitmap.get(), glowSize);
 
-
-		// Unpremultiply alpha directly in the bitmap
 		BitmapData bitmapData;
 		Rect lockRect(0, 0, width, height);
+
+		// lock the bitmap data for the next steps
 		bitmap->LockBits(&lockRect, ImageLockModeRead | ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData);
 
 		UINT* pixels = reinterpret_cast<UINT*>(bitmapData.Scan0);
 
+		// unpremultiply alpha and set opacity to user-specified value
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				UINT& pixel = pixels[y * (bitmapData.Stride / sizeof(UINT)) + x];
@@ -167,15 +170,55 @@ void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFON
 					UINT blue = static_cast<UINT>(std::clamp((pixel & 0xFF) / alphaNorm, 0.0f, 255.0f));
 
 					pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+
+					// alpha is unpremultiplied, set the user's specified opacity value
+
+					BYTE alpha2 = (pixel >> 24) & 0xFF;
+					BYTE red2 = (pixel >> 16) & 0xFF;
+					BYTE green2 = (pixel >> 8) & 0xFF;
+					BYTE blue2 = pixel & 0xFF;
+
+					alpha2 = (alpha2 * glowOpacity) / 255; // scale alpha with opacity input
+
+					pixel = (alpha2 << 24) | (red2 << 16) | (green2 << 8) | blue2;
 				}
 			}
 		}
-		bitmap->UnlockBits(&bitmapData);
-		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
-		InflateRect(&rect,-glowSize,-glowSize);
-	}
 
-	DrawThemeTextEx(theme, hdc, 0, 0, text, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rect, &optsText);
+		// unlock the bitmap data so we can render the real text
+		bitmap->UnlockBits(&bitmapData);
+
+		// get the RGB values from the DTTOPTS variable and use 255 as alpha since we're not using a changeable value
+		SolidBrush textBrush(Color(255, GetRValue(optsText.crText), GetGValue(optsText.crText), GetBValue(optsText.crText)));
+
+		if (setting == CLEARTYPE_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
+
+		else if (setting == ANTIALIASED_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+
+		else if (setting == NONANTIALIASED_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintSingleBitPerPixel);
+
+		else if (setting == DEFAULT_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
+
+		graphics.DrawString(text, -1, &gdiFont, textRect, &stringFormat, &textBrush);
+		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
+	}
+	else // glowSize is set to 0, don't bother with the calculations for it
+	{
+		SolidBrush textBrush(Color(255, GetRValue(optsText.crText), GetGValue(optsText.crText), GetBValue(optsText.crText)));
+
+		if (setting == ANTIALIASED_QUALITY || setting == CLEARTYPE_QUALITY || setting == DEFAULT_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
+
+		else if (setting == NONANTIALIASED_QUALITY)
+			graphics.SetTextRenderingHint(TextRenderingHintSingleBitPerPixel);
+
+		graphics.DrawString(text, -1, &gdiFont, textRect, &stringFormat, &textBrush);
+		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
+	}
 }
 
 
@@ -1217,9 +1260,10 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			DTTOPTS optsText = opts;
 			optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
 			optsText.crText = s_Skin.Caption_text_color;
-			DrawTextWithCustomGlow(s_Theme, hdcTemp, caption, rc, s_Skin.Caption_font, glowColor, s_Skin.Caption_glow_size, opts, optsText);
+			DrawTextWithCustomGlow(s_Theme, hdcTemp, caption, rc, s_Skin.Caption_font, glowColor, s_Skin.Caption_glow_size, opts, optsText, s_Skin.User_name_glow_offset, s_Skin.User_name_glow_opacity, GetSettingInt(L"FontSmoothing"));
 		}
 
+		// draw the text
 		// draw the text
 		int offset = 0;
 		if (s_bRTL)
@@ -1456,12 +1500,15 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 				MenuSkin::HALIGN_RIGHT1 || s_Skin.User_name_align == MenuSkin::HALIGN_RIGHT2)
 				align = s_bRTL ? DT_LEFT : DT_RIGHT;
 			if (s_Theme)
-					{
+			{
 				COLORREF glowColor = RGB(s_Skin.User_glow_color & 0xFF, (s_Skin.User_glow_color >> 8) & 0xFF, (s_Skin.User_glow_color >> 16) & 0xFF);
 				DTTOPTS optsText = opts;
 				optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
 				optsText.crText = s_Skin.User_text_color;
-				DrawTextWithCustomGlow(s_Theme, hdcTemp, name, rc, s_Skin.User_font, glowColor, s_Skin.User_glow_size, opts, optsText);
+				HFONT fontTemp = s_Skin.User_font;
+				LOGFONT fontAttributes = { 0 };
+				GetObject(fontTemp, sizeof(fontAttributes), &fontAttributes);
+				DrawTextWithCustomGlow(s_Theme, hdcTemp, name, rc, s_Skin.User_font, glowColor, s_Skin.User_glow_size, opts, optsText, s_Skin.User_name_glow_offset, s_Skin.User_name_glow_opacity, fontAttributes.lfQuality);
 			}
 
 			// draw the text
@@ -2417,10 +2464,8 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 		SIZE iconSize;
 		if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL)
 			iconSize.cx = iconSize.cy = g_ItemManager.SMALL_ICON_SIZE;
-
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_MEDIUM)
 			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
-
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_LARGE)
 			iconSize.cx = iconSize.cy = g_ItemManager.LARGE_ICON_SIZE;
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_PROGRAMS)
@@ -2437,6 +2482,9 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 		}
 		else
 			iconSize.cx = iconSize.cy = 0;
+
+		if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 
 		COLORREF color, shadowColor;
 		{
@@ -2499,8 +2547,8 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 		{
 			if (s_Skin.ProgramsXP_icon.GetBitmap())
 			{
-				int iconXP_X = ((itemRect.left + itemRect.right) / 2) + settings.iconPadding.left + settings.iconPadding.right;
-				int iconXP_Y = itemRect.top + settings.iconPadding.top + settings.iconTopOffset;
+				int iconXP_X = (itemRect.right/2) - (settings.iconSize+settings.iconPadding.right-settings.iconPadding.left);
+				int iconXP_Y = itemRect.top + (settings.iconSize+settings.iconPadding.top-settings.iconPadding.bottom);
 				const MenuBitmap& iconXP = s_Skin.ProgramsXP_icon;
 				HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
 				if (iconXP.bIs32)
@@ -2583,6 +2631,9 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				pIcon = item.pItemInfo->smallIcon;
 				break;
 			}
+
+			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+				pIcon = item.pItemInfo->mediumIcon;
 			if (pIcon && pIcon->bitmap)
 			{
 				HBITMAP temp = ColorizeMonochromeImage(pIcon->bitmap, color);
@@ -2734,8 +2785,8 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				secondaryRect.top += 5;
 				secondaryRect.left = rc.left;
 
-				RECT primaryRect = secondaryRect;
-				primaryRect.bottom += 5;
+				RECT primaryRect = itemRect;
+				primaryRect.bottom -= 5;
 				primaryRect.left = rc.left;
 
 
@@ -2744,11 +2795,9 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 					optsTemp1.crText = settings.secondaryLabelColors[1];
 				else
 					optsTemp1.crText = settings.secondaryLabelColors[0];
-				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &primaryRect, &optsTemp1);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_BOTTOM, &primaryRect, &optsTemp1);
 				SelectObject(hdc, settings.boldFont);
-				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabel, -1,
-					DT_LEFT | DT_SINGLELINE | DT_NOPREFIX,
-					&secondaryRect, &dttOpts);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabel, item.secondaryLabel.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_TOP, &secondaryRect, &dttOpts);
 				SelectObject(hdc, settings.font);
 			}
 			else if (item.hasEmailSecondLabel == true)
@@ -2770,7 +2819,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				secondaryRectEmail.left = rc.left;
 
 				RECT primaryRectEmail = secondaryRectEmail;
-				primaryRectEmail.bottom += 5;
+				primaryRectEmail.bottom -= 5;
 				primaryRectEmail.left = rc.left;
 
 				DTTOPTS optsTemp2 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
@@ -2778,11 +2827,9 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 					optsTemp2.crText = settings.secondaryLabelColors[1];
 				else
 					optsTemp2.crText = settings.secondaryLabelColors[0];
-				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &primaryRectEmail, &optsTemp2);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_BOTTOM, &primaryRectEmail, &optsTemp2);
 				SelectObject(hdc, settings.boldFont);
-				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabelEmail , -1,
-					DT_LEFT | DT_SINGLELINE | DT_NOPREFIX,
-					&secondaryRectEmail, &dttOptsEmail);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabelEmail, item.secondaryLabelEmail.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_TOP, &secondaryRectEmail, &dttOptsEmail);
 				SelectObject(hdc, settings.font);
 			}
 			if (item.isBold)

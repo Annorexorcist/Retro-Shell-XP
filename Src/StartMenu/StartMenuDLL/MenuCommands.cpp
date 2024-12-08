@@ -442,6 +442,11 @@ void CMenuContainer::OpenSubMenu(int index, TActivateType type, bool bShift)
 		-s_Skin.Submenu_padding.left + s_Skin.Submenu_offset, -s_Skin.Submenu_padding.top,
 		s_Skin.Submenu_padding.right - s_Skin.Submenu_offset, s_Skin.Submenu_padding.bottom
 	};
+	if (item.id == MENU_PROGRAMSXP)
+		border = {
+			-GetSettingInt(L"ProgramsXPOffset"), 0,
+			0, 0
+		};
 	if (s_bRTL)
 	{
 		// swap and change signs

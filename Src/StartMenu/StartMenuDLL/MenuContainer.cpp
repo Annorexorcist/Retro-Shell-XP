@@ -1317,6 +1317,11 @@ void CMenuContainer::AddStandardItems(void)
 				iconSizeType = CItemManager::ICON_SIZE_TYPE_EXTRA_LARGE;
 				refreshFlags = CItemManager::INFO_EXTRA_LARGE_ICON;
 			}
+			else if (item.id==MENU_SHUTDOWN_BOX || item.id==MENU_LOGOFF || item.id==MENU_LOGOFF_CONFIRM)
+			{
+				iconSizeType = CItemManager::ICON_SIZE_TYPE_MEDIUM;
+				refreshFlags = CItemManager::INFO_MEDIUM_ICON;
+			}
 			else if (mainIconSize == MenuSkin::ICON_SIZE_LARGE)
 			{
 				iconSizeType = CItemManager::ICON_SIZE_TYPE_LARGE;
@@ -3549,6 +3554,8 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				iconSize = g_ItemManager.SMALL_ICON_SIZE;
 			else if (settings.iconSize == MenuSkin::ICON_SIZE_MEDIUM)
 				iconSize = g_ItemManager.MEDIUM_ICON_SIZE;
+			else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+				iconSize = g_ItemManager.MEDIUM_ICON_SIZE;
 			else if (settings.iconSize == MenuSkin::ICON_SIZE_LARGE)
 				iconSize = g_ItemManager.LARGE_ICON_SIZE;
 			if (item.id == MENU_PROGRAMS_TREE)
@@ -3790,10 +3797,6 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 			}
 			else if (item.bInline && item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 			{
-				// HACKHACK - temporarily tell the menu it's not inline
-				// HACKHACK - in order to force the menu to let us use our own positions
-				// HACKHACK - we're bypassing the main bInLine setting function now
-				// bInline = false;
 
 				// width of items
 				// TODO - make these user-servicable parameters and not hard-coded
@@ -3812,7 +3815,7 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				if (item.id == MENU_SHUTDOWN_BOX)
 				{
 					// pin shutdown item to right side of menu
-					item.itemRect.right = menuWidth;
+					item.itemRect.right = menuWidth + s_Skin.Main2_padding.right;
 					item.itemRect.left = item.itemRect.right - shutdownWidth;
 					
 				}
@@ -3821,8 +3824,6 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 					item.itemRect.right = menuWidth - shutdownWidth;
 					item.itemRect.left = item.itemRect.right - logoffWidth;
 				}
-				// HACKHACK - reset bInLine so other inline items don't get screwed up
-				// bInline = true;
 			}
 			else if (item.id == MENU_SHUTDOWN_BUTTON)
 			{

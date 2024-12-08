@@ -17,7 +17,7 @@ Logoff_item_width=75
 Secondary_label_colors=#B3BFCD,#FFFFFF
 ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
 
-User_name_position=65,12,-15,55
+User_name_position=65,19,-15,55
 User_name_align=left
 User_font="Franklin Gothic Medium",normal,18
 User_text_color=#FFFFFF
@@ -81,7 +81,7 @@ Main_split_selection=21
 Main_split_selection_slices_X=4,1,1,1,1,2
 Main_split_selection_slices_Y=2,1,2
 
-Main2_padding=11,69,4,2
+Main2_padding=11,69,4,3
 MAIN2_ICON_PADDING=3,6,3,6
 
 Main2_arrow_padding=8,9,100%
@@ -98,7 +98,7 @@ Main2_split_selection_slices_Y=2,1,2
 ProgramsXP_button_selection=4
 ProgramsXP_icon=4
 ProgramsXP_icon_selected=4
-ProgramsXP_icon_padding=30,3,0,-3
+ProgramsXP_icon_padding=30,1,0,-2
 ProgramsXP_text_padding=15,8,0,8,100%
 ProgramsXP_font="Tahoma",bold,-8.5
 ProgramsXP_button_new_text_padding=0,0,0,0,100%
