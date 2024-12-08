@@ -2,7 +2,7 @@
 // Retro-Shell (c) 2024, aubymori
 // Confidential information of Ivo Beltchev. Not for disclosure or distribution without prior written consent from the author
 
-#include <stdafx.h>
+#include "stdafx.h"
 #include "resource.h"
 #include "Settings.h"
 #include "SettingsUIHelper.h"
