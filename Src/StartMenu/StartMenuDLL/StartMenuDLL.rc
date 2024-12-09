@@ -634,8 +634,18 @@ BEGIN
     IDS_MENU2_WIDTH         "2nd column width"
     IDS_MENU_WIDTH_TIP      "Set width of the 1st main menu column"
     IDS_MENU2_WIDTH_TIP     "Set width of the 2nd main menu column"
+
+    IDS_SHUTDOWNXP_WIDTH       "Shutdown button width"
+    IDS_LOGOFFXP_WIDTH         "Logoff button width"
+    IDS_SHUTDOWNXP_WIDTH_TIP   "Set width of the Shutdown button"
+    IDS_LOGOFFXP_WIDTH_TIP     "Set width of the Logoff button"
+
     IDS_PROGRAMSXP_OFFSET   "Submenu offset for XP-style Programs button"
     IDS_PROGRAMSXP_OFFSET_TIP "Sets the offset of the Programs submenu when opened with the XP-style Programs button"
+	IDS_LOGOFF_COMMAND		"Logoff command"
+    IDS_LOGOFF_COMMAND_TIP "If set to anything except 'default', the Logoff command will execute this program"
+	IDS_SHUTDOWNXP_COMMAND		"Shutdown command"
+    IDS_SHUTDOWNXP_COMMAND_TIP "If set to anything except 'default', the Shutdown command will execute this program"
     IDS_SUBMENU_WIDTH       "Sub-menu width"
     IDS_SUBMENU_WIDTH_TIP   "Set the width of the sub-menu text to fit this many average-width characters"
     IDS_SAME_COLUMNS        "All columns are same size"

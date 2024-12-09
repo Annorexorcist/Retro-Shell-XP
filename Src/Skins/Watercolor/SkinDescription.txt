@@ -8,11 +8,6 @@ User_opacity=solid
 ; skinnable sub-menus, skinnable pager buttons, skinnable arrows, etc
 Version=2
 
-
-; XP-style shutdown and logoff button widths
-Shutdown_item_width=125
-Logoff_item_width=75
-
 ; XP-style internet and email label color
 Secondary_label_colors=#343434,#FFFFFF
 ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF

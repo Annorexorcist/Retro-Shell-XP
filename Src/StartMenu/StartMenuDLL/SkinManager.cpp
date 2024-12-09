@@ -1370,22 +1370,6 @@ bool MenuSkin::LoadSkinItem(HMODULE hMod, CSkinParser& parser, const wchar_t* na
 		settings.bOwnFont = true;
 	}
 
-	Sprintf(name2, _countof(name2), L"Shutdown_item_width", name);
-	str = parser.FindSetting(name2);
-
-	if (str)
-		settings.Shutdown_item_width = _wtol(str);
-	else
-		settings.Shutdown_item_width = 100;
-
-	Sprintf(name2, _countof(name2), L"Logoff_item_width", name);
-	str = parser.FindSetting(name2);
-
-	if (str)
-		settings.Logoff_item_width = _wtol(str);
-	else
-		settings.Logoff_item_width = 50;
-
 	Sprintf(name2, _countof(name2), L"Secondary_label_colors", name);
 	if (LoadSkinColors(parser, name2, settings.secondaryLabelColors, _countof(settings.secondaryLabelColors), backgroundColor))
 	{

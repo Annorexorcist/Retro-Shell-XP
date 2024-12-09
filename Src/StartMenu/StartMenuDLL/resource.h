@@ -793,6 +793,14 @@
 #define IDS_MENU2_WIDTH_TIP             3692
 #define IDS_PROGRAMSXP_OFFSET           3693
 #define IDS_PROGRAMSXP_OFFSET_TIP       3694
+#define IDS_LOGOFF_COMMAND              3695
+#define IDS_LOGOFF_COMMAND_TIP          3696
+#define IDS_SHUTDOWNXP_COMMAND          3697
+#define IDS_SHUTDOWNXP_COMMAND_TIP      3698
+#define IDS_SHUTDOWNXP_WIDTH            3699
+#define IDS_SHUTDOWNXP_WIDTH_TIP        3700
+#define IDS_LOGOFFXP_WIDTH              3701
+#define IDS_LOGOFFXP_WIDTH_TIP          3702
 #define IDS_STRING7001                  7001
 #define IDS_STRING7002                  7002
 #define IDS_STRING7003                  7003

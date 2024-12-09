@@ -3805,8 +3805,8 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				// width of items
 				// TODO - make these user-servicable parameters and not hard-coded
 				// TODO - done 21-11-2024
-				const int shutdownWidth = s_Skin.ItemSettings[MenuSkin::COLUMN2_ITEM].Shutdown_item_width;
-				const int logoffWidth = s_Skin.ItemSettings[MenuSkin::COLUMN2_ITEM].Logoff_item_width;
+				const int shutdownWidth = GetSettingInt(L"ShutdownXPWidth");
+				const int logoffWidth = GetSettingInt(L"LogoffXPWidth");
 
 				// HACKHACK - there's probably a better way to get menu width
 				int menuWidth = s_MenuWidthNormal+columnWidths[0] + columnWidths[1]+ s_Skin.Main2_padding.right;

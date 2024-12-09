@@ -6,12 +6,7 @@ AboutIcon=1
 User_opacity=solid
 ; Version - version of the required skin engine. Set to 2 if the skin uses any of the new features introduced in Classic Shell 1.9.0 like full glass,
 ; skinnable sub-menus, skinnable pager buttons, skinnable arrows, etc
-Version=3
-
-
-; XP-style shutdown and logoff button widths
-Shutdown_item_width=125
-Logoff_item_width=75
+Version=2
 
 ; XP-style internet and email label color
 Secondary_label_colors=#B3BFCD,#FFFFFF

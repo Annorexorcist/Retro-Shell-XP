@@ -2819,6 +2819,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 
 			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 			{
+				rc.right += 25;
 				if (bHot)
 					opts.crText = settings.bottomActionColors[1];
 				else
