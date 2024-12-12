@@ -12,6 +12,15 @@ Version=2
 Secondary_label_colors=#B3BFCD,#FFFFFF
 ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
 
+Shutdown_icon=28
+Shutdown_icon_padding=4,6,0,0
+Shutdown_text_padding=10,0,0,0
+
+Logoff_icon=27
+Logoff_icon_padding=4,6,0,0
+Logoff_text_padding=10,0,0,0
+
+
 User_name_position=65,19,-15,55
 User_name_align=left
 User_glow_offset=0,2
@@ -78,8 +87,8 @@ Main_split_selection=21
 Main_split_selection_slices_X=4,1,1,1,1,2
 Main_split_selection_slices_Y=2,1,2
 
-Main2_padding=7,69,7,2
-MAIN2_ICON_PADDING=3,7,3,7
+Main2_padding=7,69,11,3
+MAIN2_ICON_PADDING=5,6,5,6
 
 Main2_arrow_padding=8,9,100%
 Main2_arrow=7

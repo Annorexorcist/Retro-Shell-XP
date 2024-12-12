@@ -2479,6 +2479,30 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 
 		if (skinType != SKIN_TYPE_WIN7)
 		{
+			str = parser.FindSetting(L"Shutdown_icon_padding");
+			if (str)
+				LoadSkinNumbers(str, (int*)&Shutdown_icon_padding, 4, NUMBERS_PADDING);
+			else
+				memset(&Shutdown_icon_padding, 0, sizeof(Shutdown_icon_padding));
+
+			str = parser.FindSetting(L"Logoff_icon_padding");
+			if (str)
+				LoadSkinNumbers(str, (int*)&Logoff_icon_padding, 4, NUMBERS_PADDING);
+			else
+				memset(&Logoff_icon_padding, 0, sizeof(Logoff_icon_padding));
+
+			str = parser.FindSetting(L"Shutdown_text_padding");
+			if (str)
+				LoadSkinNumbers(str, (int*)&Shutdown_text_padding, 4, NUMBERS_PADDING);
+			else
+				memset(&Shutdown_text_padding, 0, sizeof(Shutdown_text_padding));
+
+			str = parser.FindSetting(L"Logoff_text_padding");
+			if (str)
+				LoadSkinNumbers(str, (int*)&Logoff_text_padding, 4, NUMBERS_PADDING);
+			else
+				memset(&Logoff_text_padding, 0, sizeof(Logoff_text_padding));
+
 			str = parser.FindSetting(L"User_glow_offset");
 			if (str)
 				LoadSkinNumbers(str, (int*)&User_name_glow_offset, 2, NUMBERS_OTHER);
@@ -2510,9 +2534,6 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 					ProgramsXP_background=(a<<24)|(b<<16)|(g<<8)|r;
 				}
 			}
-			if (!LoadSkinItem(hMod, parser, L"ShutdownBox", ItemSettings[SHUTDOWN_BOX],
-			                  &ItemSettings[LIST_ITEM], Programs_background, bRTL))
-				return false;
 			if (!LoadSkinItem(hMod, parser, L"ProgramsXP", ItemSettings[PROGRAMSXP],
 			                  &ItemSettings[COLUMN1_ITEM], Programs_background, bRTL))
 				return false;

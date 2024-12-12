@@ -90,6 +90,9 @@ END
 25                       BITMAP                  "user_picture_background_metallic.bmp"
 26                       BITMAP                  "user_picture_background_homestead.bmp"
 
+27                       BITMAP                  "logoff_icon.bmp"
+28                       BITMAP                  "shutdown_icon.bmp"
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

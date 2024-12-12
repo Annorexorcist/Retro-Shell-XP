@@ -287,6 +287,10 @@ struct MenuSkin
 	int Main_bitmap_jump_slices_Y[6];
 
 	RECT Shutdown_padding;
+	RECT Shutdown_icon_padding;
+	RECT Logoff_icon_padding;
+	RECT Shutdown_text_padding;
+	RECT Logoff_text_padding;
 
 	bool bHasNewItem;
 	bool Main_thin_frame;

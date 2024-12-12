@@ -68,6 +68,8 @@ END
 24                       BITMAP                  "submenu_hilight.bmp"
 25                       BITMAP                  "submenu_hilight_split.bmp"
 26                       BITMAP                  "places_hilight_split.bmp"
+27                       BITMAP                  "logoff_icon.bmp"
+28                       BITMAP                  "shutdown_icon.bmp"
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

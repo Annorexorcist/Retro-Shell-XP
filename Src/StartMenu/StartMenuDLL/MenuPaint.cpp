@@ -2435,8 +2435,10 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 
 		bool bNoIcon = !item.bInline && settings.iconSize == MenuSkin::ICON_SIZE_NONE;
 		SIZE iconSize;
-		if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL)
+		if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL && (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM))
 			iconSize.cx = iconSize.cy = g_ItemManager.SMALL_ICON_SIZE;
+		else if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL && (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM))
+			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_MEDIUM)
 			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_LARGE)
@@ -2455,9 +2457,6 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 		}
 		else
 			iconSize.cx = iconSize.cy = 0;
-
-		if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
-			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 
 		COLORREF color, shadowColor;
 		{
@@ -2594,20 +2593,76 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			const CItemManager::IconInfo* pIcon = nullptr;
 			switch (settings.iconSize)
 			{
-			case MenuSkin::ICON_SIZE_LARGE:
-				pIcon = item.pItemInfo->largeIcon;
-				break;
-			case MenuSkin::ICON_SIZE_MEDIUM:
-				pIcon = item.pItemInfo->mediumIcon;
-				break;
-			case MenuSkin::ICON_SIZE_SMALL:
-				pIcon = item.pItemInfo->smallIcon;
-				break;
+				case MenuSkin::ICON_SIZE_LARGE:
+					if (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->largeIcon;
+					else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->mediumIcon;
+					break;
+				case MenuSkin::ICON_SIZE_MEDIUM:
+					pIcon = item.pItemInfo->mediumIcon;
+					break;
+				case MenuSkin::ICON_SIZE_SMALL:
+					if (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->smallIcon;
+					else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->mediumIcon;
+					break;
 			}
-
 			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
-				pIcon = item.pItemInfo->mediumIcon;
-			if (pIcon && pIcon->bitmap)
+			{
+				if (item.id == MENU_SHUTDOWN_BOX && s_Skin.Shutdown_icon.GetBitmap())
+				{
+					int iconXP_X = itemRect.left + s_Skin.Shutdown_icon_padding.left - s_Skin.Shutdown_icon_padding.right;
+					int iconXP_Y = itemRect.top + s_Skin.Shutdown_icon_padding.top - s_Skin.Shutdown_icon_padding.bottom;
+					const MenuBitmap& iconXP = s_Skin.Shutdown_icon;
+					HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+					if (iconXP.bIs32)
+					{
+						BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+						if (bHot)
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Shutdown_icon_size.cx, s_Skin.Shutdown_icon_size.cy / 2, hdc2, 0,
+								s_Skin.Shutdown_icon_size.cy / 2, s_Skin.Shutdown_icon_size.cx,
+								s_Skin.Shutdown_icon_size.cy / 2, func2);
+						}
+						else
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Shutdown_icon_size.cx, s_Skin.Shutdown_icon_size.cy / 2, hdc2, 0,
+								0, s_Skin.Shutdown_icon_size.cx,
+								s_Skin.Shutdown_icon_size.cy / 2, func2);
+						}
+					}
+					else
+						BitBlt(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy, hdc2, 0,
+							  0, SRCCOPY);
+					SelectObject(hdc2, bmp0);
+				}
+				else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM && s_Skin.Logoff_icon.GetBitmap())
+				{
+					int iconXP_X = itemRect.left + s_Skin.Logoff_icon_padding.left - s_Skin.Logoff_icon_padding.right;
+					int iconXP_Y = itemRect.top + s_Skin.Logoff_icon_padding.top - s_Skin.Logoff_icon_padding.bottom;
+					const MenuBitmap& iconXP = s_Skin.Logoff_icon;
+					HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+					if (iconXP.bIs32)
+					{
+						BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+						if (bHot) 
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Logoff_icon_size.cx, s_Skin.Logoff_icon_size.cy / 2, hdc2, 0,
+								s_Skin.Logoff_icon_size.cy / 2, s_Skin.Logoff_icon_size.cx,
+								s_Skin.Logoff_icon_size.cy / 2, func2);
+						}
+						else
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Logoff_icon_size.cx, s_Skin.Logoff_icon_size.cy / 2, hdc2, 0,
+								0, s_Skin.Logoff_icon_size.cx,
+								s_Skin.Logoff_icon_size.cy / 2, func2);
+						}
+					}
+				}
+			}
+			if (pIcon && pIcon->bitmap && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
 			{
 				HBITMAP temp = ColorizeMonochromeImage(pIcon->bitmap, color);
 				HBITMAP bitmap = temp ? temp : pIcon->bitmap;
@@ -2657,18 +2712,36 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 		};
 		if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
 		{
+			if (item.id==MENU_SHUTDOWN_BOX)
+			{
+				int centerY = (itemRect.top + itemRect.bottom) / 2 + s_Skin.Shutdown_text_padding.top - s_Skin.Shutdown_text_padding.bottom;
 
-			int centerY = (itemRect.top + itemRect.bottom) / 2;
-			int textHeight = settings.textMetrics.tmHeight+settings.textPadding.top+settings.textPadding.bottom; // Example font height, adjust as needed.
-			int newTop = centerY - (textHeight / 2);
-			int newBottom = centerY + (textHeight / 2);
+				int left = itemRect.left + s_Skin.Shutdown_text_padding.left - s_Skin.Shutdown_text_padding.right;
+				int newTop = centerY - 12;
+				int newBottom = centerY + 12;
 
-			rc = {
-				itemRect.left + settings.iconPadding.left + settings.iconPadding.right + settings.iconPadding.right,
-				newTop,
-				itemRect.right,
-				newBottom
-			};
+				rc = {
+					left,
+					newTop,
+					itemRect.right,
+					newBottom
+				};
+			}
+			else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				int centerY = (itemRect.top + itemRect.bottom) / 2 + (s_Skin.Logoff_text_padding.top - s_Skin.Logoff_text_padding.bottom);
+
+				int left = itemRect.left + s_Skin.Logoff_text_padding.left - s_Skin.Logoff_text_padding.right;
+				int newTop = centerY - 12;
+				int newBottom = centerY + 12;
+
+				rc = {
+					left,
+					newTop,
+					itemRect.right,
+					newBottom
+				};
+			}
 		}
 		if (item.id==MENU_PROGRAMSXP)
 			rc = { 
@@ -2755,7 +2828,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOpts.crText = color;
 
 				RECT secondaryRect = itemRect;
-				secondaryRect.top += 5;
+				secondaryRect.top += 3;
 				secondaryRect.left = rc.left;
 
 				RECT primaryRect = itemRect;
@@ -2788,7 +2861,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOptsEmail.crText = color;
 
 				RECT secondaryRectEmail = itemRect;
-				secondaryRectEmail.top += 5;
+				secondaryRectEmail.top += 3;
 				secondaryRectEmail.left = rc.left;
 
 				RECT primaryRectEmail = secondaryRectEmail;
