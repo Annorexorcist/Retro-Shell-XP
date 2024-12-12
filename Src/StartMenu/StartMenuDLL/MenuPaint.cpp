@@ -2828,11 +2828,11 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOpts.crText = color;
 
 				RECT secondaryRect = itemRect;
-				secondaryRect.top += 3;
+				secondaryRect.top += 5;
 				secondaryRect.left = rc.left;
 
 				RECT primaryRect = itemRect;
-				primaryRect.bottom -= 5;
+				primaryRect.bottom -= 7;
 				primaryRect.left = rc.left;
 
 
@@ -2861,11 +2861,11 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOptsEmail.crText = color;
 
 				RECT secondaryRectEmail = itemRect;
-				secondaryRectEmail.top += 3;
+				secondaryRectEmail.top += 5;
 				secondaryRectEmail.left = rc.left;
 
 				RECT primaryRectEmail = secondaryRectEmail;
-				primaryRectEmail.bottom -= 5;
+				primaryRectEmail.bottom -= 7;
 				primaryRectEmail.left = rc.left;
 
 				DTTOPTS optsTemp2 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
