@@ -4,7 +4,6 @@
 // Confidential information of Ivo Beltchev. Not for disclosure or distribution without prior written consent from the author
 
 // MenuPaint.cpp - handles the painting functionality of CMenuContainer
-
 #include "stdafx.h"
 #include "ItemManager.h"
 #include "MenuContainer.h"
@@ -25,173 +24,7 @@
 #include <memory>
 #include <vector>
 #include <cmath>
-#pragma comment(lib, "gdiplus.lib")
-
-using namespace Gdiplus;
-
-
 static BLENDFUNCTION g_AlphaFunc = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
-
-std::vector<std::vector<float>> CreateGaussianKernel(int radius, float sigma) {
-	int size = 2 * radius + 1;
-	std::vector<std::vector<float>> kernel(size, std::vector<float>(size));
-	float sum = 0.0f;
-
-	for (int y = -radius; y <= radius; ++y) {
-		for (int x = -radius; x <= radius; ++x) {
-			float value = exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * 3.14159 * sigma * sigma);
-			kernel[y + radius][x + radius] = value;
-			sum += value;
-		}
-	}
-
-	// Normalize the kernel
-	for (int y = 0; y < size; ++y) {
-		for (int x = 0; x < size; ++x) {
-			kernel[y][x] /= sum;
-		}
-	}
-
-	return kernel;
-}
-
-void InitializeGDIPlus() {
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-}
-
-void ShutdownGDIPlus(ULONG_PTR gdiplusToken) {
-	GdiplusShutdown(gdiplusToken);
-}
-
-void ApplyGaussianBlur(Bitmap* bitmap, int radius) {
-	int width = bitmap->GetWidth();
-	int height = bitmap->GetHeight();
-	BitmapData bitmapData;
-	Rect rect(0, 0, width, height);
-
-	bitmap->LockBits(&rect, ImageLockModeRead | ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData);
-
-	UINT* pixels = (UINT*)bitmapData.Scan0;
-	std::vector<UINT> originalPixels(pixels, pixels + width * height);
-
-	auto kernel = CreateGaussianKernel(radius, radius / 2.0f);
-
-	for (int y = 0; y < height; ++y) {
-		for (int x = 0; x < width; ++x) {
-			float r = 0, g = 0, b = 0, a = 0;
-			for (int ky = -radius; ky <= radius; ++ky) {
-				for (int kx = -radius; kx <= radius; ++kx) {
-					int ix = std::clamp(x + kx, 0, width - 1);
-					int iy = std::clamp(y + ky, 0, height - 1);
-					UINT pixel = originalPixels[iy * width + ix];
-					float weight = kernel[ky + radius][kx + radius];
-
-					a += weight * ((pixel >> 24) & 0xFF);
-					r += weight * ((pixel >> 16) & 0xFF);
-					g += weight * ((pixel >> 8) & 0xFF);
-					b += weight * (pixel & 0xFF);
-				}
-			}
-
-			pixels[y * width + x] = ((UINT)a << 24) | ((UINT)r << 16) | ((UINT)g << 8) | (UINT)b;
-		}
-	}
-
-	bitmap->UnlockBits(&bitmapData);
-}
-
-void DrawTextWithCustomGlow(HTHEME theme, HDC hdc, LPCWSTR text, RECT rect, HFONT font, COLORREF glowColor, int glowSize, DTTOPTS opts, DTTOPTS optsText, POINT glowOffset, int glowOpacity, int setting)
-{
-	// Initialize GDI+ if not already initialized
-	static bool gdiPlusInitialized = false;
-	static ULONG_PTR gdiplusToken;
-	if (!gdiPlusInitialized) {
-		InitializeGDIPlus();
-		gdiPlusInitialized = true;
-	}
-		
-	// Create a temporary bitmap
-	int width = rect.right - rect.left;
-	int height = rect.bottom - rect.top;
-	std::unique_ptr<Bitmap> bitmap(new Bitmap(width, height, PixelFormat32bppARGB));
-	Graphics graphics(bitmap.get());
-	Gdiplus::SolidBrush brush_tr(Gdiplus::Color::Transparent);
-	graphics.FillRectangle(&brush_tr, 0,0,width,height);
-
-	// Create a GDI+ font from the HFONT
-	Font gdiFont(hdc, font);
-
-	// Create a GDI+ brush for the glow color
-	Color glowColorGdi(GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
-	SolidBrush glowBrush(glowColorGdi);
-
-	// Create a GDI+ string format
-	StringFormat stringFormat;
-	stringFormat.SetAlignment(StringAlignmentNear);
-	stringFormat.SetLineAlignment(StringAlignmentNear);
-	graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
-
-	// Create a GDI+ rectangle from the RECT
-	RectF gdiRect(glowOffset.x, glowOffset.y, static_cast<REAL>(width), static_cast<REAL>(height));
-	RectF textRect(rect.left, rect.top, rect.right, rect.bottom);
-
-	Graphics hdcGraphics(hdc);
-
-	// added a check to not attempt to draw a glow if the glowSize is set to 0
-	if (glowSize > 0)
-	{
-		// draw the text that's to be blurred
-		graphics.DrawString(text, -1, &gdiFont, gdiRect, &stringFormat, &glowBrush);
-
-		// apply the gaussian blur to the bitmap
-		ApplyGaussianBlur(bitmap.get(), glowSize);
-
-		BitmapData bitmapData;
-		Rect lockRect(0, 0, width, height);
-
-		// lock the bitmap data for the next steps
-		bitmap->LockBits(&lockRect, ImageLockModeRead | ImageLockModeWrite, PixelFormat32bppARGB, &bitmapData);
-
-		UINT* pixels = reinterpret_cast<UINT*>(bitmapData.Scan0);
-
-		// unpremultiply alpha and set opacity to user-specified value
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				UINT& pixel = pixels[y * (bitmapData.Stride / sizeof(UINT)) + x];
-
-				UINT alpha = (pixel >> 24) & 0xFF;
-				if (alpha > 0) {
-					float alphaNorm = alpha / 255.0f;
-
-					UINT red = static_cast<UINT>(std::clamp(((pixel >> 16) & 0xFF) / alphaNorm, 0.0f, 255.0f));
-					UINT green = static_cast<UINT>(std::clamp(((pixel >> 8) & 0xFF) / alphaNorm, 0.0f, 255.0f));
-					UINT blue = static_cast<UINT>(std::clamp((pixel & 0xFF) / alphaNorm, 0.0f, 255.0f));
-
-					pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
-
-					// alpha is unpremultiplied, set the user's specified opacity value
-
-					BYTE alpha2 = (pixel >> 24) & 0xFF;
-					BYTE red2 = (pixel >> 16) & 0xFF;
-					BYTE green2 = (pixel >> 8) & 0xFF;
-					BYTE blue2 = pixel & 0xFF;
-
-					alpha2 = (alpha2 * glowOpacity) / 255; // scale alpha with opacity input
-
-					pixel = (alpha2 << 24) | (red2 << 16) | (green2 << 8) | blue2;
-				}
-			}
-		}
-		bitmap->UnlockBits(&bitmapData);
-		hdcGraphics.DrawImage(bitmap.get(), rect.left, rect.top, width, height);
-		//InflateRect(&rect,-glowSize,-glowSize);
-	}
-	rect.top -= 9;
-	rect.left += 3;
-	DrawThemeTextEx(theme, hdc, 0, 0, text, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rect, &optsText);
-}
 
 
 
@@ -1227,16 +1060,36 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			textWidth - s_Skin.Caption_padding.top,
 			textHeight - (s_bRTL ? s_Skin.Caption_padding.left : s_Skin.Caption_padding.right)
 		};
-		if (s_Theme)
+		if (s_Theme && s_Skin.Caption_glow_size > 0)
 		{
-			COLORREF glowColor = RGB((s_Skin.Caption_glow_color) & 0xFF, (s_Skin.Caption_glow_color >> 8) & 0xFF, s_Skin.Caption_glow_color >> 16 & 0xFF);
-			DTTOPTS optsText = opts;
-			optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
-			optsText.crText = s_Skin.Caption_text_color;
-			DrawTextWithCustomGlow(s_Theme, hdcTemp, caption, rc, s_Skin.Caption_font, glowColor, s_Skin.Caption_glow_size, opts, optsText, s_Skin.User_name_glow_offset, s_Skin.User_name_glow_opacity, GetSettingInt(L"FontSmoothing"));
+			// draw the glow
+			opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
+			opts.crText = 0xFFFFFF;
+			opts.iGlowSize = s_Skin.Caption_glow_size;
+			DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, caption, -1,DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE, &rc, &opts);
+			SelectObject(hdcTemp, bmp02); // deselect bmpText so all the GDI operations get flushed
+
+			// change the glow color
+			int gr = (s_Skin.Caption_glow_color) & 255;
+			int gg = (s_Skin.Caption_glow_color >> 8) & 255;
+			int gb = (s_Skin.Caption_glow_color >> 16) & 255;
+			for (int y = 0; y < textHeight; y++)
+				for (int x = 0; x < textWidth; x++)
+				{
+					unsigned int& pixel = bits2[y * textWidth + x];
+					int a1 = (pixel >> 24);
+					int r1 = (pixel >> 16) & 255;
+					int g1 = (pixel >> 8) & 255;
+					int b1 = (pixel) & 255;
+					r1 = (r1 * gr) / 255;
+					g1 = (g1 * gg) / 255;
+					b1 = (b1 * gb) / 255;
+					pixel = (a1 << 24) | (r1 << 16) | (g1 << 8) | b1;
+				}
+
+			SelectObject(hdcTemp, bmpText);
 		}
 
-		// draw the text
 		// draw the text
 		int offset = 0;
 		if (s_bRTL)
@@ -1472,16 +1325,37 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			else if (s_Skin.User_name_align == MenuSkin::HALIGN_RIGHT || s_Skin.User_name_align ==
 				MenuSkin::HALIGN_RIGHT1 || s_Skin.User_name_align == MenuSkin::HALIGN_RIGHT2)
 				align = s_bRTL ? DT_LEFT : DT_RIGHT;
-			if (s_Theme)
+			if (s_Theme && s_Skin.User_glow_size > 0)
 			{
-				COLORREF glowColor = RGB(s_Skin.User_glow_color & 0xFF, (s_Skin.User_glow_color >> 8) & 0xFF, (s_Skin.User_glow_color >> 16) & 0xFF);
-				DTTOPTS optsText = opts;
-				optsText.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
-				optsText.crText = s_Skin.User_text_color;
-				HFONT fontTemp = s_Skin.User_font;
-				LOGFONT fontAttributes = { 0 };
-				GetObject(fontTemp, sizeof(fontAttributes), &fontAttributes);
-				DrawTextWithCustomGlow(s_Theme, hdcTemp, name, rc, s_Skin.User_font, glowColor, s_Skin.User_glow_size, opts, optsText, s_Skin.User_name_glow_offset, s_Skin.User_name_glow_opacity, fontAttributes.lfQuality);
+				InflateRect(&rc, -s_Skin.User_glow_size, -s_Skin.User_glow_size);
+				// draw the glow
+				opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR | DTT_GLOWSIZE;
+				opts.crText = 0xFFFFFF;
+				opts.iGlowSize = s_Skin.User_glow_size;
+				DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
+				                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
+				                &opts);
+				SelectObject(hdcTemp, bmp02); // deselect bmpText so all the GDI operations get flushed
+
+				// change the glow color
+				int gr = (s_Skin.User_glow_color) & 255;
+				int gg = (s_Skin.User_glow_color >> 8) & 255;
+				int gb = (s_Skin.User_glow_color >> 16) & 255;
+				for (int y = 0; y < nameHeight; y++)
+					for (int x = 0; x < nameWidth; x++)
+					{
+						unsigned int& pixel = bits2[y * nameWidth + x];
+						int a1 = (pixel >> 24);
+						int r1 = (pixel >> 16) & 255;
+						int g1 = (pixel >> 8) & 255;
+						int b1 = (pixel) & 255;
+						r1 = (r1 * gr) / 255;
+						g1 = (g1 * gg) / 255;
+						b1 = (b1 * gb) / 255;
+						pixel = (a1 << 24) | (r1 << 16) | (g1 << 8) | b1;
+					}
+
+				SelectObject(hdcTemp, bmpText);
 			}
 
 			// draw the text
@@ -1493,10 +1367,9 @@ void CMenuContainer::CreateBackground(int width1, int width2, int height1, int h
 			{
 				opts.dwFlags = DTT_COMPOSITED | DTT_TEXTCOLOR;
 				opts.crText = s_Skin.User_text_color;
-				// we draw the text in DrawTextWithCustomGlow now
-				//DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
-				//                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
-				//                &opts);
+				DrawThemeTextEx(s_Theme, hdcTemp, 0, 0, name, -1,
+				                align | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOCLIP, &rc,
+				                &opts);
 				SelectObject(hdcTemp, bmp02);
 
 				// copy the text onto the final bitmap. Combine the alpha channels
@@ -2828,11 +2701,11 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOpts.crText = color;
 
 				RECT secondaryRect = itemRect;
-				secondaryRect.top += 5;
+				secondaryRect.top += (5+GetSettingInt(L"SpecialIconTextOffsetTop"));
 				secondaryRect.left = rc.left;
 
 				RECT primaryRect = itemRect;
-				primaryRect.bottom -= 7;
+				primaryRect.bottom -= (7+GetSettingInt(L"SpecialIconTextOffsetBottom"));
 				primaryRect.left = rc.left;
 
 
@@ -2861,11 +2734,11 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				dttOptsEmail.crText = color;
 
 				RECT secondaryRectEmail = itemRect;
-				secondaryRectEmail.top += 5;
+				secondaryRectEmail.top += (5+GetSettingInt(L"SpecialIconTextOffsetTop"));
 				secondaryRectEmail.left = rc.left;
 
-				RECT primaryRectEmail = secondaryRectEmail;
-				primaryRectEmail.bottom -= 7;
+				RECT primaryRectEmail = itemRect;
+				primaryRectEmail.bottom -= (7+GetSettingInt(L"SpecialIconTextOffsetBottom"));
 				primaryRectEmail.left = rc.left;
 
 				DTTOPTS optsTemp2 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };

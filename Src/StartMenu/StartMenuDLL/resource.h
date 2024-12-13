@@ -801,6 +801,10 @@
 #define IDS_SHUTDOWNXP_WIDTH_TIP        3700
 #define IDS_LOGOFFXP_WIDTH              3701
 #define IDS_LOGOFFXP_WIDTH_TIP          3702
+#define IDS_SPCICON_TOP_OFFSET          3703
+#define IDS_SPCICON_TOP_OFFSET_TIP      3704
+#define IDS_SPCICON_BTM_OFFSET          3705
+#define IDS_SPCICON_BTM_OFFSET_TIP      3706
 #define IDS_STRING7001                  7001
 #define IDS_STRING7002                  7002
 #define IDS_STRING7003                  7003

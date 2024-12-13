@@ -642,6 +642,13 @@ BEGIN
 
     IDS_PROGRAMSXP_OFFSET   "Submenu offset for XP-style Programs button"
     IDS_PROGRAMSXP_OFFSET_TIP "Sets the offset of the Programs submenu when opened with the XP-style Programs button"
+
+	IDS_SPCICON_TOP_OFFSET   "Internet/E-mail text top offset"
+    IDS_SPCICON_TOP_OFFSET_TIP "Offset of the top text of the Internet/E-mail icon"
+
+	IDS_SPCICON_BTM_OFFSET   "Internet/E-mail text bottom offset"
+    IDS_SPCICON_BTM_OFFSET_TIP "Offset of the bottom text of the Internet/E-mail icon"
+
 	IDS_LOGOFF_COMMAND		"Logoff command"
     IDS_LOGOFF_COMMAND_TIP "If set to anything except 'default', the Logoff command will execute this program"
 	IDS_SHUTDOWNXP_COMMAND		"Shutdown command"
