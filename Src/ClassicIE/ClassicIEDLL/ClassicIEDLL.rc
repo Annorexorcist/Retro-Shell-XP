@@ -71,11 +71,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "aubymori"
+            VALUE "CompanyName", "The Retro-Shell Team"
             VALUE "FileDescription", "Customizations for the title bar and status bar of IE"
             VALUE "FileVersion", _PRODUCT_VERSION_STR
             VALUE "InternalName", "ClassicIEDLL.dll"
-            VALUE "LegalCopyright", "Copyright (C) 2024, aubymori"
+            VALUE "LegalCopyright", "Copyright (C) 2025, Olive6841"
             VALUE "OriginalFilename", "ClassicIEDLL.dll"
             VALUE "ProductName", "Retro-Shell"
             VALUE "ProductVersion", _PRODUCT_VERSION_STR

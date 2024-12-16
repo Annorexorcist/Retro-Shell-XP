@@ -1,5 +1,6 @@
 // Classic Shell (c) 2009-2017, Ivo Beltchev
 // Retro-Shell (c) 2024, aubymori
+// Retro-Shell (c) 2025, Olive6841
 // Confidential information of Ivo Beltchev. Not for disclosure or distribution without prior written consent from the author
 
 #include "stdafx.h"
@@ -639,7 +640,7 @@ void VersionData::Clear(void)
 	downloadUrl.Empty();
 	downloadSigner.Empty();
 	news.Empty();
-	updateLink = "https://github.com/aubymori/Retro-Shell/releases";
+	updateLink = "https://github.com/Olive6841/Retro-Shell/releases";
 	bNewVersion = bIgnoreVersion = false;
 }
 

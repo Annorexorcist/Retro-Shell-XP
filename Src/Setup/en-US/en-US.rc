@@ -69,11 +69,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "aubymori"
+            VALUE "CompanyName", "The Retro-Shell Team"
             VALUE "FileDescription", "en-US"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "en-US"
-            VALUE "LegalCopyright", "Copyright (C) 2024, aubymori"
+            VALUE "LegalCopyright", "Copyright (C) 2025, Olive6841"
             VALUE "OriginalFilename", "en-US"
             VALUE "ProductName", "Retro-Shell"
             VALUE "ProductVersion", "1, 0, 0, 1"

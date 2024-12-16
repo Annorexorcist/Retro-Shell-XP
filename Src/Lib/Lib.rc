@@ -275,7 +275,7 @@ BEGIN
     IDS_BMP_TITLE           "Select Image File"
     IDS_SEARCH_PROMPT       "Search Settings"
     IDS_SETTING_SEARCH      "Search Results"
-    IDS_WEBSITE_TIP         "Visit Retro-Shell on the web - https://github.com/aubymori/Retro-Shell "
+    IDS_WEBSITE_TIP         "Visit Retro-Shell on the web - https://github.com/Olive6841/Retro-Shell "
     IDS_LOCATE_SETTING      "Locate setting"
     IDS_INTERNET_FAIL       "Failed to connect to the Internet."
 END

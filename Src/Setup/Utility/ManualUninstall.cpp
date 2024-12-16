@@ -1,5 +1,6 @@
 // Classic Shell (c) 2009-2017, Ivo Beltchev
 // Retro-Shell (c) 2024, aubymori
+// Retro-Shell (c) 2025, Olive6841
 // Confidential information of Ivo Beltchev. Not for disclosure or distribution without prior written consent from the author
 
 #ifndef _WIN64
@@ -334,7 +335,7 @@ LRESULT CResultsDlg::OnInitDialog( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	if (m_bErrors)
 	{
 		SetDlgItemText(IDC_STATICRESULT,L"The Retro-Shell removal tool encountered some errors. Please, restart your computer and try again. If the problem is not resolved"
-			L" seek help in the Retro-Shell forums: https://github.com/aubymori/Retro-Shell/discussions. Copy the following report and post it in the forum. The report is also saved in a file OpenShellReport.txt on your desktop.");
+			L" seek help in the Retro-Shell forums: https://github.com/Olive6841/Retro-Shell/discussions. Copy the following report and post it in the forum. The report is also saved in a file OpenShellReport.txt on your desktop.");
 	}
 	else if (m_bReboot)
 	{
