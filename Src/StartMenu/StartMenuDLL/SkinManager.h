@@ -292,6 +292,8 @@ struct MenuSkin
 	RECT Logoff_icon_padding;
 	RECT Shutdown_text_padding;
 	RECT Logoff_text_padding;
+	bool Force_thick_borders_main;
+	bool Force_thick_borders_sub;
 
 	bool bHasNewItem;
 	bool Main_thin_frame;

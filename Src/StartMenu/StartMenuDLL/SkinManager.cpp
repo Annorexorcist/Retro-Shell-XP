@@ -2165,6 +2165,12 @@ bool MenuSkin::LoadSkin(HMODULE hMod, const wchar_t* variation, const wchar_t* o
 		str = parser.FindSetting(L"Main_thin_frame");
 		Main_thin_frame = (str && _wtol(str));
 
+		str = parser.FindSetting(L"Force_thick_borders_main");
+		Force_thick_borders_main = (str && _wtol(str));
+
+		str = parser.FindSetting(L"Force_thick_borders_sub");
+		Force_thick_borders_sub = (str && _wtol(str));
+
 		for (int i = 0; i < _countof(Main_emblems); i++)
 		{
 			wchar_t name[100];

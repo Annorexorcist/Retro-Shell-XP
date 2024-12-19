@@ -8504,16 +8504,22 @@ HWND CMenuContainer::ToggleStartMenu(int taskbarId, bool bKeyboard, bool bAllPro
 	if (bTheme)
 	{
 		if (s_Skin.Main_opacity == MenuSkin::OPACITY_SOLID)
-			dwStyle |= WS_BORDER;
+			if (s_Skin.Force_thick_borders_main)
+				dwStyle |= WS_DLGFRAME | WS_EX_CLIENTEDGE;
+			else
+				dwStyle |= WS_BORDER;
 		if (s_Skin.Submenu_opacity == MenuSkin::OPACITY_SOLID)
-			s_SubmenuStyle |= WS_BORDER;
+			if (s_Skin.Force_thick_borders_sub)
+				s_SubmenuStyle |= WS_DLGFRAME | WS_EX_CLIENTEDGE;
+			else
+				s_SubmenuStyle |= WS_BORDER;
 	}
 	else
 	{
 		if (s_Skin.Main_opacity == MenuSkin::OPACITY_SOLID)
-			dwStyle |= s_Skin.Main_thin_frame ? WS_BORDER : WS_DLGFRAME;
+			dwStyle |= !s_Skin.Force_thick_borders_main ? WS_BORDER : WS_DLGFRAME;
 		if (s_Skin.Submenu_opacity == MenuSkin::OPACITY_SOLID)
-			s_SubmenuStyle |= s_Skin.Submenu_thin_frame ? WS_BORDER : WS_DLGFRAME;
+			s_SubmenuStyle |= !s_Skin.Force_thick_borders_sub ? WS_BORDER : WS_DLGFRAME;
 	}
 
 	if (s_bWin7Style)

@@ -368,6 +368,8 @@ IDI_START10             ICON                    "start10.ico"
 // Bitmap
 //
 
+900             		BITMAP                  "noskin_shutdown.bmp"
+901              		BITMAP                  "noskin_logoff.bmp"
 IDB_ARROWS              BITMAP                  "menu_arrows.bmp"
 IDB_ARROWS150           BITMAP                  "menu_arrows150.bmp"
 IDB_SEARCH_ICONS        BITMAP                  "search_icons.bmp"
@@ -1162,7 +1164,7 @@ BEGIN
     IDS_STRING7010          "Transparency level#Select how transparent the menu should be"
     IDS_STRING7011          "Small icons#The main menu will use small icons"
     IDS_STRING7012          "Solid color selection#The selection will use the system color instead of a gradient"
-    IDS_STRING7013          "3D border (requires Classic theme)#The menus will have a 3D look (only for Windows 7 with Classic theme)"
+    IDS_STRING7013          "3D border#The menus will have a 3D look"
     IDS_STRING7014          "Show user picture#The main menu will show the user picture"
     IDS_STRING7015          "Show user name#The main menu will show the user name"
     IDS_STRING7016          "White sub-menus#The sub-menus will have a white background instead of the system menu color"
