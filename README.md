@@ -7,7 +7,7 @@ Retro-Shell but with XP-style enhancements.
 
 *Originally* **[Retro-Shell](https://github.com/Olive6841/Retro-Shell)**
 
-#List of additions and changes
+# List of additions and changes
 
 - Internet and E-mail labels
 - Selective bold text
