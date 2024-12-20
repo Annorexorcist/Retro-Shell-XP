@@ -76,22 +76,11 @@
 				<?endif ?>
 				<ComponentRef Id="StartScreenLink" />
 				<ComponentRef Id="StartMenuHelperL10N.ini" />
-				<ComponentRef Id="ClassicSkin.skin" />
-				<ComponentRef Id="FullGlass.skin" />
-				<ComponentRef Id="SmokedGlass.skin" />
-				<ComponentRef Id="WindowsAero.skin" />
-				<ComponentRef Id="WindowsBasic.skin" />
-				<ComponentRef Id="WindowsXPLuna.skin" />
-				<ComponentRef Id="Windows8.skin" />
-				<ComponentRef Id="Metro.skin" />
-				<ComponentRef Id="ClassicSkin.skin7" />
-				<ComponentRef Id="WindowsAero.skin7" />
-				<ComponentRef Id="Windows8.skin7" />
-				<ComponentRef Id="Midnight.skin7" />
-				<ComponentRef Id="Metro.skin7" />
-				<ComponentRef Id="Metallic.skin7" />
-				<ComponentRef Id="Immersive.skin" />
-				<ComponentRef Id="Immersive.skin7" />
+				<ComponentRef Id="XPLuna.skin" />
+				<ComponentRef Id="RoyaleNoir.skin" />
+				<ComponentRef Id="Watercolor.skin" />
+				<ComponentRef Id="Zune.skin" />
+				<ComponentRef Id="WinXPLunaBlueBeta.skin" />
 				<ComponentRef Id="AutoRun" />
 				<ComponentRef Id="MenuSettingsLink" />
 			</Feature>
@@ -492,57 +481,20 @@
 			<?endif ?>
 		</DirectoryRef>
 		<DirectoryRef Id="Skins">
-			<Component Id="ClassicSkin.skin" Guid="301CA0BC-1DD4-4A25-8E1E-FA1A0134A814" Win64="$(var.CS_WIN64)">
-				<File Id="ClassicSkin.skin" KeyPath="yes" Checksum="yes" Source="Output\Classic Skin.skin" Vital="yes" />
+			<Component Id="XPLuna.skin" Guid="556a1891-ec02-4990-a1c3-6121c3cc4a72" Win64="$(var.CS_WIN64)">
+				<File Id="XPLuna.skin" KeyPath="yes" Checksum="yes" Source="Output\XPLuna.skin" Vital="yes" />
 			</Component>
-			<Component Id="FullGlass.skin" Guid="B71131E1-ED7C-4EED-9289-528B50E2C8EE" Win64="$(var.CS_WIN64)">
-				<File Id="FullGlass.skin" KeyPath="yes" Checksum="yes" Source="Output\Full Glass.skin" Vital="yes" />
+			<Component Id="RoyaleNoir.skin" Guid="8d748de0-be91-41e8-825f-2b15b3a6619d" Win64="$(var.CS_WIN64)">
+				<File Id="RoyaleNoir.skin" KeyPath="yes" Checksum="yes" Source="Output\RoyaleNoir.skin" Vital="yes" />
 			</Component>
-			<Component Id="SmokedGlass.skin" Guid="19BF925A-85C0-4EFC-8F0C-091BFE5355FA" Win64="$(var.CS_WIN64)">
-				<File Id="SmokedGlass.skin" KeyPath="yes" Checksum="yes" Source="Output\Smoked Glass.skin" Vital="yes" />
+			<Component Id="Watercolor.skin" Guid="91205ba4-f6c6-441b-914f-d675444a5ea9" Win64="$(var.CS_WIN64)">
+				<File Id="Watercolor.skin" KeyPath="yes" Checksum="yes" Source="Output\Watercolor.skin" Vital="yes" />
 			</Component>
-			<Component Id="WindowsAero.skin" Guid="31F56072-143D-4483-9590-E928CA6A4C5B" Win64="$(var.CS_WIN64)">
-				<File Id="WindowsAero.skin" KeyPath="yes" Checksum="yes" Source="Output\Windows Aero.skin" Vital="yes" />
+			<Component Id="WinXPLunaBlueBeta.skin" Guid="c9cca7c6-4bb8-4890-9e41-793f16b0e1b4" Win64="$(var.CS_WIN64)">
+				<File Id="WinXPLunaBlueBeta.skin" KeyPath="yes" Checksum="yes" Source="Output\WinXPLunaBlueBeta.skin" Vital="yes" />
 			</Component>
-			<Component Id="WindowsBasic.skin" Guid="64F8BA21-1A66-45f8-9BA6-E27156DCAAAE" Win64="$(var.CS_WIN64)">
-				<File Id="WindowsBasic.skin" KeyPath="yes" Checksum="yes" Source="Output\Windows Basic.skin" Vital="yes" />
-			</Component>
-			<Component Id="WindowsXPLuna.skin" Guid="FBC71683-D1B5-4F6C-A14C-AD9B555D10BB" Win64="$(var.CS_WIN64)">
-				<File Id="WindowsXPLuna.skin" KeyPath="yes" Checksum="yes" Source="Output\Windows XP Luna.skin" Vital="yes" />
-			</Component>
-			<Component Id="Windows8.skin" Guid="3787BF83-4910-4008-8C0A-C82602AE80B7" Win64="$(var.CS_WIN64)">
-				<File Id="Windows8.skin" KeyPath="yes" Checksum="yes" Source="Output\Windows 8.skin" Vital="yes" />
-			</Component>
-			<Component Id="Metro.skin" Guid="E7ADDABB-E019-4893-B0C8-200367EEEBAC" Win64="$(var.CS_WIN64)">
-				<File Id="Metro.skin" KeyPath="yes" Checksum="yes" Source="Output\Metro.skin" Vital="yes" />
-				<Condition>VersionNT&gt;601</Condition>
-			</Component>
-			<Component Id="ClassicSkin.skin7" Guid="24A14A38-B51B-4F6E-8922-95F868F78934" Win64="$(var.CS_WIN64)">
-				<File Id="ClassicSkin.skin7" KeyPath="yes" Checksum="yes" Source="Output\Classic Skin.skin7" Vital="yes" />
-			</Component>
-			<Component Id="WindowsAero.skin7" Guid="4D2ED9E7-825A-4BC6-8EF9-ED142F6FE15F" Win64="$(var.CS_WIN64)">
-				<File Id="WindowsAero.skin7" KeyPath="yes" Checksum="yes" Source="Output\Windows Aero.skin7" Vital="yes" />
-			</Component>
-			<Component Id="Windows8.skin7" Guid="BF69351E-763F-4A31-8180-7A39AA4541B9" Win64="$(var.CS_WIN64)">
-				<File Id="Windows8.skin7" KeyPath="yes" Checksum="yes" Source="Output\Windows 8.skin7" Vital="yes" />
-			</Component>
-			<Component Id="Midnight.skin7" Guid="CE36C4AD-F3CB-4ae0-AC0A-845F5C7B3ED5" Win64="$(var.CS_WIN64)">
-				<File Id="Midnight.skin7" KeyPath="yes" Checksum="yes" Source="Output\Midnight.skin7" Vital="yes" />
-			</Component>
-			<Component Id="Metro.skin7" Guid="4CA9B157-C098-4137-BD17-107C79CBCF44" Win64="$(var.CS_WIN64)">
-				<File Id="Metro.skin7" KeyPath="yes" Checksum="yes" Source="Output\Metro.skin7" Vital="yes" />
-				<Condition>VersionNT&gt;601</Condition>
-			</Component>
-			<Component Id="Metallic.skin7" Guid="2167BBCA-FD42-4285-AE00-9CDDDF436B30" Win64="$(var.CS_WIN64)">
-				<File Id="Metallic.skin7" KeyPath="yes" Checksum="yes" Source="Output\Metallic.skin7" Vital="yes" />
-			</Component>
-			<Component Id="Immersive.skin" Guid="045C48C3-FE11-4C66-AD7F-3F3EE35B4DEA" Win64="$(var.CS_WIN64)">
-				<File Id="Immersive.skin" KeyPath="yes" Checksum="yes" Source="Output\Immersive.skin" Vital="yes" />
-				<Condition>WINDOWSBUILDNUM&gt;10000</Condition>
-			</Component>
-			<Component Id="Immersive.skin7" Guid="FFECA17A-C005-4D84-9F7C-DBC8EA2E1B5A" Win64="$(var.CS_WIN64)">
-				<File Id="Immersive.skin7" KeyPath="yes" Checksum="yes" Source="Output\Immersive.skin7" Vital="yes" />
-				<Condition>WINDOWSBUILDNUM&gt;10000</Condition>
+			<Component Id="Zune.skin" Guid="3003d907-41db-4c62-bba8-61cb6d5e0c17" Win64="$(var.CS_WIN64)">
+				<File Id="Zune.skin" KeyPath="yes" Checksum="yes" Source="Output\Zune.skin" Vital="yes" />
 			</Component>
 		</DirectoryRef>
 		<DirectoryRef Id="TARGETDIR">

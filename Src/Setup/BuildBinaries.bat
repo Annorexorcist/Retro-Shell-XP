@@ -7,16 +7,16 @@ echo -- Compiling
 for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath`) do set MSBuildDir=%%i\MSBuild\Current\Bin\
 
 REM Restore NuGet packages
-"%MSBuildDir%MSBuild.exe" ..\OpenShell.sln /m /t:Restore -p:RestorePackagesConfig=true /verbosity:quiet /nologo
+"%MSBuildDir%MSBuild.exe" ..\Retro-Shell.sln /m /t:Restore -p:RestorePackagesConfig=true /verbosity:quiet /nologo
 
 REM ********* Build 64-bit solution
 echo --- 64bit
-"%MSBuildDir%MSBuild.exe" ..\OpenShell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="x64" /verbosity:quiet /nologo
+"%MSBuildDir%MSBuild.exe" ..\Retro-Shell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="x64" /verbosity:quiet /nologo
 @if ERRORLEVEL 1 exit /b 1
 
 REM ********* Build 32-bit solution (must be after 64-bit)
 echo --- 32bit
-"%MSBuildDir%MSBuild.exe" ..\OpenShell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="Win32" /verbosity:quiet /nologo
+"%MSBuildDir%MSBuild.exe" ..\Retro-Shell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="Win32" /verbosity:quiet /nologo
 @if ERRORLEVEL 1 exit /b 1
 
 
@@ -52,24 +52,11 @@ copy /B ..\..\build\bin\Setup64\StartMenu.exe Output\x64 > nul
 copy /B ..\..\build\bin\Setup64\StartMenuDLL.dll Output\x64 > nul
 copy /B ..\..\build\bin\Setup64\StartMenuHelper64.dll Output\x64 > nul
 
-copy /B "..\..\build\bin\Skins\Classic Skin.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Full Glass.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Smoked Glass.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Windows Aero.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Windows Basic.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Windows XP Luna.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Windows 8.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Metro.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Classic Skin.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Windows Aero.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Windows 8.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Midnight.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Metro.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Metallic.skin7" Output > nul
-copy /B "..\..\build\bin\Skins\Immersive.skin" Output > nul
-copy /B "..\..\build\bin\Skins\Immersive.skin7" Output > nul
-
-
+copy /B "..\..\build\bin\Skins\Zune.skin" Output > nul
+copy /B "..\..\build\bin\Skins\XPLuna.skin" Output > nul
+copy /B "..\..\build\bin\Skins\RoyaleNoir.skin" Output > nul
+copy /B "..\..\build\bin\Skins\Watercolor.skin" Output > nul
+copy /B "..\..\build\bin\Skins\WinXPLunaBlueBeta.skin" Output > nul
 REM ********* Collect debug info
 md Output\PDB32
 md Output\PDB64
