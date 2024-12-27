@@ -1047,6 +1047,10 @@ static const CStdCommand g_StdCommands[] = {
 	{L"COLUMN_BREAK",IDS_COLUMN_BREAK_ITEM,IDS_BREAK_TIP},
 	{L"COLUMN_PADDING",IDS_COLUMN_PADDING_ITEM,IDS_PADDING_TIP},
 	{
+		L"progsxp",IDS_PROGRAMSXP_ITEM,IDS_PROGRAMSXP_TIP, L"ProgramsXPMenu", L"$Menu.ProgramsXP", L"$Menu.ProgramsXPTip",
+		L"shell32.dll,326", &FOLDERID_Programs, StdMenuItem::MENU_TRACK
+	},
+	{
 		L"programs",IDS_PROGRAMS_ITEM,IDS_PROGRAMS_TIP, L"ProgramsMenu", L"$Menu.Programs", L"$Menu.ProgramsTip",
 		L"shell32.dll,326", &FOLDERID_Programs, StdMenuItem::MENU_TRACK
 	},
@@ -1332,18 +1336,22 @@ const wchar_t* g_DefaultStartMenu1 =
 	L"ShutdownItem.Icon=none\n";
 
 const wchar_t* g_DefaultStartMenu2 =
-	L"Items=COLUMN_PADDING, ProgramsMenu, AppsMenu, SearchBoxItem, COLUMN_BREAK, FavoritesItem, UserFilesItem, UserDocumentsItem, RecentDocumentsItem, UserPicturesItem, UserMusicItem, ComputerItem, SEPARATOR, PCSettingsItem, ControlPanelItem, SecurityItem, NetworkItem, PrintersItem, SEPARATOR, SearchMenu, HelpItem, RunItem, COLUMN_PADDING, SEPARATOR, ShutdownBoxItem\n"
-	L"ProgramsMenu.Command=programs\n"
-	L"ProgramsMenu.Label=$Menu.Programs\n"
-	L"ProgramsMenu.Icon=shell32.dll,326\n"
-	L"AppsMenu.Command=apps\n"
-	L"AppsMenu.Label=$Menu.Apps\n"
-	L"AppsMenu.Icon=,2\n"
+	L"Items=COLUMN_PADDING,ProgramsXPMenu,COLUMN_BREAK,FavoritesItem,UserDocumentsItem,RecentDocumentsItem,UserPicturesItem,UserMusicItem,ComputerItem,SEPARATOR,ControlPanelItem,ProgramsFeaturesItem,SecurityItem,PrintersItem,SEPARATOR,HelpItem,SearchMenu,RunItem,COLUMN_PADDING,CustomItem\n"
+	L"ProgramsXPMenu.Command=progsxp\n"
+	L"ProgramsXPMenu.Label=All Programs\n"
+	L"ProgramsXPMenu.Tip=$Menu.ProgramsXPTip\n"
+	L"ProgramsXPMenu.Icon=shell32.dll, 326\n"
+	L"ProgramsXPMenu.Settings=TRACK_RECENT\n"
 	L"FavoritesItem.Command=favorites\n"
 	L"FavoritesItem.Label=$Menu.Favorites\n"
 	L"FavoritesItem.Icon=imageres.dll,1024\n"
-	L"ComputerItem.Command=computer\n"
+	L"UserDocumentsItem.Command=user_documents\n"
+	L"UserDocumentsItem.Label=boldMy Documents\n"
+	L"UserDocumentsItem.Tip=$Menu.UserDocumentsTip\n"
+	L"UserDocumentsItem.Icon=shell32.dll, 235\n"
 	L"RecentDocumentsItem.Command=recent_documents\n"
+	L"RecentDocumentsItem.Label=boldMy Recent Documents\n"
+	L"RecentDocumentsItem.Icon=shell32.dll, 327\n"
 	L"RecentDocumentsItem.Settings=ITEMS_FIRST\n"
 	L"SearchMenu.Command=search\n"
 	L"SearchMenu.Items=SearchFilesItem, SearchPrinterItem, SearchComputersItem, SearchPeopleItem\n"
@@ -1371,30 +1379,42 @@ const wchar_t* g_DefaultStartMenu2 =
 	L"UserDocumentsItem.Command=user_documents\n"
 	L"UserDocumentsItem.Tip=$Menu.UserDocumentsTip\n"
 	L"UserPicturesItem.Command=user_pictures\n"
+	L"UserPicturesItem.Label=boldMy Pictures\n"
 	L"UserPicturesItem.Tip=$Menu.UserPicturesTip\n"
+	L"UserPicturesItem.Icon=shell32.dll, 236\n"
 	L"UserMusicItem.Command=user_music\n"
+	L"UserMusicItem.Label=boldMy Music\n"
 	L"UserMusicItem.Tip=$Menu.UserMusicTip\n"
+	L"UserMusicItem.Icon=shell32.dll, 237\n"
+	L"ComputerItem.Command=computer\n"
+	L"ComputerItem.Label=boldMy Computer\n"
 	L"ControlPanelItem.Command=control_panel\n"
 	L"ControlPanelItem.Icon=shell32.dll,137\n"
 	L"ControlPanelItem.Label=$Menu.ControlPanel\n"
 	L"ControlPanelItem.Tip=$Menu.ControlPanelTip\n"
+	L"ControlPanelItem.Icon=shell32.dll,137\n"
 	L"ControlPanelItem.Settings=TRACK_RECENT\n"
-	L"PCSettingsItem.Command=pc_settings\n"
-	L"PCSettingsItem.Link=shell:appsfolder\\windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel\n"
-	L"PCSettingsItem.Label=$Menu.PCSettings\n"
-	L"PCSettingsItem.Settings=TRACK_RECENT\n"
+	L"ProgramsFeaturesItem.Command=programs_features\n"
+	L"ProgramsFeaturesItem.Label=Set Program Access and Defaults\n"
+	L"ProgramsFeaturesItem.Tip=$Menu.FeaturesTip\n"
+	L"ProgramsFeaturesItem.Icon=shell32.dll,271\n"
 	L"SecurityItem.Command=windows_security\n"
 	L"SecurityItem.Icon=shell32.dll,48\n"
 	L"SecurityItem.Label=$Menu.Security\n"
 	L"SecurityItem.Tip=$Menu.SecurityTip\n"
-	L"NetworkItem.Command=network_connections\n"
-	L"NetworkItem.Icon=shell32.dll,257\n"
-	L"NetworkItem.Label=$Menu.Network\n"
-	L"NetworkItem.Tip=$Menu.NetworkTip\n"
+	L"SecurityItem.Icon=shell32.dll,48\n"
 	L"PrintersItem.Command=printers\n"
-	L"PrintersItem.Icon=shell32.dll,138\n"
-	L"PrintersItem.Label=$Menu.Printers\n"
+	L"PrintersItem.Label=Printers and Faxes\n"
 	L"PrintersItem.Tip=$Menu.PrintersTip\n"
+	L"PrintersItem.Icon=shell32.dll,138\n"
+	L"HelpItem.Command=help\n"
+	L"HelpItem.Label=$Menu.Help\n"
+	L"HelpItem.Tip=$Menu.HelpTip\n"
+	L"HelpItem.Icon=imageres.dll,99\n"
+	L"SearchMenu.Items=SearchFilesItem,SearchPrinterItem,SearchComputersItem,SearchPeopleItem\n"
+	L"SearchMenu.Command=search\n"
+	L"SearchMenu.Label=$Menu.Search\n"
+	L"SearchMenu.Icon=shell32.dll, 323\n"
 	L"SearchFilesItem.Command=search_files\n"
 	L"SearchFilesItem.Label=$Menu.SearchFiles\n"
 	L"SearchFilesItem.Tip=$Menu.SearchFilesTip\n"
@@ -1410,50 +1430,22 @@ const wchar_t* g_DefaultStartMenu2 =
 	L"SearchPeopleItem.Command=search_people\n"
 	L"SearchPeopleItem.Label=$Menu.SearchPeople\n"
 	L"SearchPeopleItem.Icon=shell32.dll,269\n"
-	L"SwitchUserItem.Command=switch_user\n"
-	L"SwitchUserItem.Label=$Menu.SwitchUser\n"
-	L"SwitchUserItem.Tip=$Menu.SwitchUserTip\n"
-	L"SwitchUserItem.Icon=none\n"
-	L"LockItem.Command=lock\n"
-	L"LockItem.Label=$Menu.Lock\n"
-	L"LockItem.Tip=$Menu.LockTip\n"
-	L"LockItem.Icon=none\n"
-	L"LogOffItem.Command=logoff\n"
-	L"LogOffItem.Label=$Menu.LogOffShort\n"
-	L"LogOffItem.Icon=none\n"
-	L"LogOffItem.Tip=$Menu.LogOffTip\n"
-	L"SleepItem.Command=sleep\n"
-	L"SleepItem.Label=$Menu.Sleep\n"
-	L"SleepItem.Tip=$Menu.SleepTip\n"
-	L"SleepItem.Icon=none\n"
-	L"HibernateItem.Command=hibernate\n"
-	L"HibernateItem.Label=$Menu.Hibernate\n"
-	L"HibernateItem.Tip=$Menu.HibernateTip\n"
-	L"HibernateItem.Icon=none\n"
-	L"RestartNUItem.Command=restart_noupdate\n"
-	L"RestartNUItem.Label=$Menu.Restart\n"
-	L"RestartNUItem.Tip=$Menu.RestartTip\n"
-	L"RestartNUItem.Icon=none\n"
-	L"RestartItem.Command=restart\n"
-	L"RestartItem.Label=$Menu.Restart\n"
-	L"RestartItem.Tip=$Menu.RestartTip\n"
-	L"RestartItem.Icon=none\n"
-	L"UndockItem.Command=undock\n"
-	L"UndockItem.Label=$Menu.Undock\n"
-	L"UndockItem.Tip=$Menu.UndockTip\n"
-	L"UndockItem.Icon=none\n"
-	L"DisconnectItem.Command=disconnect\n"
-	L"DisconnectItem.Label=$Menu.Disconnect\n"
-	L"DisconnectItem.Tip=$Menu.DisconnectTip\n"
-	L"DisconnectItem.Icon=none\n"
-	L"ShutdownNUItem.Command=shutdown_noupdate\n"
-	L"ShutdownNUItem.Label=$Menu.Shutdown\n"
-	L"ShutdownNUItem.Tip=$Menu.ShutdownTip\n"
-	L"ShutdownNUItem.Icon=none\n"
-	L"ShutdownItem.Command=shutdown\n"
-	L"ShutdownItem.Label=$Menu.Shutdown\n"
-	L"ShutdownItem.Tip=$Menu.ShutdownTip\n"
-	L"ShutdownItem.Icon=none\n";
+	L"RunItem.Command=run\n"
+	L"RunItem.Label=$Menu.Run\n"
+	L"RunItem.Tip=$Menu.RunTip\n"
+	L"RunItem.Icon=shell32.dll, 25\n"
+	L"CustomItem.Items=ShutdownBoxItem2,LogOffItem2\n"
+	L"CustomItem.Label=bottom action buttons\n"
+	L"CustomItem.Settings=INLINE\n"
+	L"ShutdownBoxItem2.Command=shutdown_box\n"
+	L"ShutdownBoxItem2.Label=Turn Off Computer\n"
+	L"ShutdownBoxItem2.Icon=shell32.dll, 51\n"
+	L"ShutdownBoxItem2.Settings=SPLIT\n"
+	L"LogOffItem2.Command=logoff\n"
+	L"LogOffItem2.Label=Log Off\n"
+	L"LogOffItem2.Tip=$Menu.LogOffTip\n"
+	L"LogOffItem2.Icon=shell32.dll, 51\n";
+
 
 const wchar_t* g_DefaultStartMenu7 =
 	L"Item1.Command=user_files\n"
@@ -4328,7 +4320,7 @@ void CMenuStyleDlg::UpdateDefaults(void)
 	UpdateSetting(L"SearchBox", CComVariant(menuStyle != MENU_CLASSIC1 ? SEARCHBOX_NORMAL : SEARCHBOX_TAB), false);
 	UpdateSetting(L"RecentPrograms",
 	              CComVariant(menuStyle != MENU_CLASSIC1 ? RECENT_PROGRAMS_FREQUENT : RECENT_PROGRAMS_RECENT), false);
-	UpdateSetting(L"MaxRecentPrograms", CComVariant(menuStyle != MENU_CLASSIC1 ? 10 : 5), false);
+	UpdateSetting(L"MaxRecentPrograms", CComVariant(menuStyle != MENU_CLASSIC1 ? 5 : 5), false);
 	UpdateSetting(L"RecentProgsTop", CComVariant(menuStyle != MENU_CLASSIC1 ? 0 : 1), false);
 	UpdateSetting(L"RecentProgKeys",
 	              CComVariant(menuStyle != MENU_CLASSIC1 ? RECENT_KEYS_HIDDEN_DIGITS : RECENT_KEYS_DIGITS), false);
@@ -4624,7 +4616,7 @@ CSetting g_Settings[] = {
 	{L"Normal", CSetting::TYPE_RADIO,IDS_KEY_NORMAL,IDS_KEY_NORMAL_TIP, 0, 0, L"RecentPrograms"},
 	{L"Digits", CSetting::TYPE_RADIO,IDS_KEY_DIGITS,IDS_KEY_DIGITS_TIP, 0, 0, L"RecentPrograms"},
 	{L"HiddenDigits", CSetting::TYPE_RADIO,IDS_KEY_HIDDEN,IDS_KEY_HIDDEN_TIP, 0, 0, L"RecentPrograms"},
-	{L"EnableJumplists", CSetting::TYPE_BOOL,IDS_JUMPLISTS,IDS_JUMPLISTS_TIP, 1},
+	{L"EnableJumplists", CSetting::TYPE_BOOL,IDS_JUMPLISTS,IDS_JUMPLISTS_TIP, 0},
 	{
 		L"MaxJumplists", CSetting::TYPE_INT,IDS_MAX_JUMPLISTS,IDS_MAX_JUMPLISTS_TIP, 10, 0, L"EnableJumplists",
 		L"EnableJumplists"
@@ -4687,9 +4679,9 @@ CSetting g_Settings[] = {
 
 	{L"GeneralBehavior", CSetting::TYPE_GROUP,IDS_BEHAVIOR_SETTINGS},
 	{L"AutoStart", CSetting::TYPE_BOOL,IDS_AUTOSTART,IDS_AUTOSTART_TIP, 1, CSetting::FLAG_BASIC},
-	{L"HighlightNew", CSetting::TYPE_BOOL,IDS_HIGHLIGHT_NEW,IDS_HIGHLIGHT_NEW_TIP, 1},
+	{L"HighlightNew", CSetting::TYPE_BOOL,IDS_HIGHLIGHT_NEW,IDS_HIGHLIGHT_NEW_TIP, 0},
 	{
-		L"HighlightNewApps", CSetting::TYPE_BOOL,IDS_HIGHLIGHT_NEWAPPS,IDS_HIGHLIGHT_NEWAPPS_TIP, 1, 0,
+		L"HighlightNewApps", CSetting::TYPE_BOOL,IDS_HIGHLIGHT_NEWAPPS,IDS_HIGHLIGHT_NEWAPPS_TIP, 0, 0,
 		L"#HighlightNew", L"HighlightNew"
 	},
 	{L"CheckWinUpdates", CSetting::TYPE_BOOL,IDS_CHECK_UPDATES,IDS_CHECK_UPDATES_TIP, 1},
@@ -4726,6 +4718,8 @@ CSetting g_Settings[] = {
 		L"AltAccelerators", CSetting::TYPE_BOOL,IDS_ALT_ACCELERATORS,IDS_ALT_ACCELERATORS_TIP, 0, 0,
 		L"EnableAccelerators", L"EnableAccelerators"
 	},
+	{L"ShutdownCommand", CSetting::TYPE_STRING,IDS_SHUTDOWNXP_COMMAND,IDS_SHUTDOWNXP_COMMAND_TIP, "default", CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"LogoffCommand", CSetting::TYPE_STRING,IDS_LOGOFF_COMMAND,IDS_LOGOFF_COMMAND_TIP, "default", CSetting::FLAG_MENU_CLASSIC_BOTH},
 
 	{L"SearchBoxSettings", CSetting::TYPE_GROUP,IDS_SEARCH_BOX},
 	{L"SearchBox", CSetting::TYPE_INT,IDS_SHOW_SEARCH_BOX,IDS_SHOW_SEARCH_BOX_TIP, SEARCHBOX_TAB, CSetting::FLAG_BASIC},
@@ -4785,7 +4779,17 @@ CSetting g_Settings[] = {
 	{L"LargeIconSize", CSetting::TYPE_INT,IDS_LARGE_SIZE_SM,IDS_LARGE_SIZE_SM_TIP, -1, CSetting::FLAG_COLD},
 	// 32 for DPI<=96, 40 for DPI<=120, 48 otherwise
 	{L"InvertMetroIcons", CSetting::TYPE_BOOL,IDS_INVERT_ICONS,IDS_INVERT_ICONS_TIP, 0},
-	{L"MaxMainMenuWidth", CSetting::TYPE_INT,IDS_MENU_WIDTH,IDS_MENU_WIDTH_TIP, 60, CSetting::FLAG_MENU_CLASSIC_BOTH},
+
+	// new settings added
+	{L"MaxMainMenuWidth", CSetting::TYPE_INT,IDS_MENU_WIDTH,IDS_MENU_WIDTH_TIP, 185, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"MaxMainMenu2Width", CSetting::TYPE_INT,IDS_MENU2_WIDTH,IDS_MENU2_WIDTH_TIP, 185, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"ShutdownXPWidth", CSetting::TYPE_INT,IDS_SHUTDOWNXP_WIDTH,IDS_SHUTDOWNXP_WIDTH_TIP, 130, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"LogoffXPWidth", CSetting::TYPE_INT,IDS_LOGOFFXP_WIDTH,IDS_LOGOFFXP_WIDTH_TIP, 75, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"ProgramsXPOffset", CSetting::TYPE_INT,IDS_PROGRAMSXP_OFFSET,IDS_PROGRAMSXP_OFFSET_TIP, 0, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"SpecialIconTextOffsetTop", CSetting::TYPE_INT,IDS_SPCICON_TOP_OFFSET,IDS_SPCICON_TOP_OFFSET_TIP, 0, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	{L"SpecialIconTextOffsetBottom", CSetting::TYPE_INT,IDS_SPCICON_BTM_OFFSET,IDS_SPCICON_BTM_OFFSET_TIP, 0, CSetting::FLAG_MENU_CLASSIC_BOTH},
+	// new settings added
+
 	{L"MaxMenuWidth", CSetting::TYPE_INT,IDS_SUBMENU_WIDTH,IDS_SUBMENU_WIDTH_TIP, 60},
 	{L"AlignToWorkArea", CSetting::TYPE_BOOL,IDS_ALIGN_WORK_AREA,IDS_ALIGN_WORK_AREA_TIP, 0},
 	{L"HorizontalMenuOffset", CSetting::TYPE_INT,IDS_HOR_OFFSET,IDS_HOR_OFFSET_TIP, 0},
@@ -5622,8 +5626,8 @@ void UpdateSettings(void)
 		else if (GetWinVersion() < WIN_VER_WIN8)
 		{
 			BOOL comp = FALSE;
-			skin12 = (SUCCEEDED(DwmIsCompositionEnabled(&comp)) && comp) ? L"Windows Aero" : L"Windows Basic";
-			skin3 = L"Windows Aero";
+			skin12 = (SUCCEEDED(DwmIsCompositionEnabled(&comp)) && comp) ? L"XPLuna" : L"XPLuna";
+			skin3 = L"XPLuna";
 			options1 =
 				L"CAPTION=1\nUSER_IMAGE=0\nUSER_NAME=0\nCENTER_NAME=0\nSMALL_ICONS=0\nLARGE_FONT=0\nDISABLE_MASK=0\nWHITE_SUBMENUS=1\n";
 			options2 =
@@ -5632,8 +5636,8 @@ void UpdateSettings(void)
 		}
 		else if (GetWinVersion() < WIN_VER_WIN10)
 		{
-			skin12 = L"Windows 8";
-			skin3 = L"Windows 8";
+			skin12 = L"XPLuna";
+			skin3 = L"XPLuna";
 			options1 =
 				L"CAPTION=1\nUSER_IMAGE=0\nUSER_NAME=0\nCENTER_NAME=0\nSMALL_ICONS=0\nLARGE_FONT=0\nDISABLE_MASK=0\nOPAQUE=0\nWHITE_SUBMENUS=1\n";
 			options2 =
@@ -5643,8 +5647,8 @@ void UpdateSettings(void)
 		}
 		else
 		{
-			skin12 = L"Immersive";
-			skin3 = L"Immersive";
+			skin12 = L"XPLuna";
+			skin3 = L"XPLuna";
 			options1 =
 				L"CAPTION=1\nUSER_IMAGE=0\nUSER_NAME=0\nCENTER_NAME=0\nSMALL_ICONS=0\nLARGE_FONT=0\nICON_FRAMES=1\nOPAQUE=0\n";
 			options2 =

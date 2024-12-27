@@ -21,7 +21,11 @@
 #include <algorithm>
 #include <math.h>
 #include <chrono>
-
+#include <windows.h>
+#include <gdiplus.h>
+#include <memory>
+#include <vector>
+#include <cmath>
 static BLENDFUNCTION g_AlphaFunc = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
 
 MIDL_INTERFACE("4BEDE6E0-A125-46A7-A3BF-4187165E09A5")
@@ -1890,6 +1894,8 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				drawType = MenuSkin::PROGRAMS_BUTTON;
 			else if (drawType == MenuSkin::PROGRAMS_CASCADING_NEW)
 				drawType = MenuSkin::PROGRAMS_CASCADING;
+			else if (drawType==MenuSkin::PROGRAMSXP_NEW)
+				drawType=MenuSkin::PROGRAMSXP;
 			else if (drawType == MenuSkin::SUBMENU_NEW)
 				drawType = MenuSkin::SUBMENU_ITEM;
 
@@ -2304,9 +2310,10 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 
 		bool bNoIcon = !item.bInline && settings.iconSize == MenuSkin::ICON_SIZE_NONE;
 		SIZE iconSize;
-		if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL)
+		if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL && (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM))
 			iconSize.cx = iconSize.cy = g_ItemManager.SMALL_ICON_SIZE;
-
+		else if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL && (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM))
+			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 		else if (settings.iconSize == MenuSkin::ICON_SIZE_MEDIUM)
 			iconSize.cx = iconSize.cy = g_ItemManager.MEDIUM_ICON_SIZE;
 
@@ -2384,6 +2391,56 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				SelectObject(hdc2, bmp0);
 			}
 		}
+		if (drawType==MenuSkin::PROGRAMSXP || drawType==MenuSkin::PROGRAMSXP_NEW)
+		{
+			if (s_Skin.ProgramsXP_icon.GetBitmap())
+			{
+				int iconXP_X = (itemRect.right/2) - (settings.iconSize+settings.iconPadding.right-settings.iconPadding.left);
+				int iconXP_Y = itemRect.top + (settings.iconSize+settings.iconPadding.top-settings.iconPadding.bottom);
+				const MenuBitmap& iconXP = s_Skin.ProgramsXP_icon;
+				HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+				if (iconXP.bIs32)
+				{
+					BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+					if (bHot)
+					{
+						AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy / 2, hdc2, 0,
+							s_Skin.ProgramsXP_icon_size.cy / 2, s_Skin.ProgramsXP_icon_size.cx,
+							s_Skin.ProgramsXP_icon_size.cy / 2, func2);
+					}
+					else
+					{
+						AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy / 2, hdc2, 0,
+							0, s_Skin.ProgramsXP_icon_size.cx,
+							s_Skin.ProgramsXP_icon_size.cy / 2, func2);
+					}
+				}
+				else
+					BitBlt(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy, hdc2, 0,
+					      0, SRCCOPY);
+				SelectObject(hdc2, bmp0);
+			}
+			else
+			{
+				const POINT* sizes = s_Skin.GetArrowsBitmapSizes();
+				SIZE s = {sizes[4].y - sizes[4].x, sizes[6].y};
+				int x = itemRect.left + settings.arrPadding.cx;
+				int y = (itemRect.top + itemRect.bottom - s.cy) / 2;
+				HGDIOBJ bmp0 = SelectObject(hdc2, GetArrowsBitmap(settings.arrColors[bHot ? 1 : 0]));
+				BLENDFUNCTION func = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+				if (s_MenuMode == MODE_PROGRAMS)
+				{
+					AlphaBlend(hdc, x, y, s.cx, s.cy, hdc2, s_bRTL ? sizes[6].x - sizes[3].y : sizes[4].x, 0, s.cx,
+					           s.cy, func);
+				}
+				else
+				{
+					AlphaBlend(hdc, x, y, s.cx, s.cy, hdc2, s_bRTL ? sizes[6].x - sizes[4].y : sizes[3].x, 0, s.cx,
+					           s.cy, func);
+				}
+				SelectObject(hdc2, bmp0);
+			}
+		}
 		else if (item.pItemInfo && !bNoIcon)
 		{
 			int iconX = itemRect.left + settings.iconPadding.left;
@@ -2412,17 +2469,76 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			const CItemManager::IconInfo* pIcon = nullptr;
 			switch (settings.iconSize)
 			{
-			case MenuSkin::ICON_SIZE_LARGE:
-				pIcon = item.pItemInfo->largeIcon;
-				break;
-			case MenuSkin::ICON_SIZE_MEDIUM:
-				pIcon = item.pItemInfo->mediumIcon;
-				break;
-			case MenuSkin::ICON_SIZE_SMALL:
-				pIcon = item.pItemInfo->smallIcon;
-				break;
+				case MenuSkin::ICON_SIZE_LARGE:
+					if (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->largeIcon;
+					else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->mediumIcon;
+					break;
+				case MenuSkin::ICON_SIZE_MEDIUM:
+					pIcon = item.pItemInfo->mediumIcon;
+					break;
+				case MenuSkin::ICON_SIZE_SMALL:
+					if (item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->smallIcon;
+					else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+						pIcon = item.pItemInfo->mediumIcon;
+					break;
 			}
-			if (pIcon && pIcon->bitmap)
+			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				if (item.id == MENU_SHUTDOWN_BOX && s_Skin.Shutdown_icon.GetBitmap())
+				{
+					int iconXP_X = itemRect.left + s_Skin.Shutdown_icon_padding.left - s_Skin.Shutdown_icon_padding.right;
+					int iconXP_Y = itemRect.top + s_Skin.Shutdown_icon_padding.top - s_Skin.Shutdown_icon_padding.bottom;
+					const MenuBitmap& iconXP = s_Skin.Shutdown_icon;
+					HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+					if (iconXP.bIs32)
+					{
+						BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+						if (bHot)
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Shutdown_icon_size.cx, s_Skin.Shutdown_icon_size.cy / 2, hdc2, 0,
+								s_Skin.Shutdown_icon_size.cy / 2, s_Skin.Shutdown_icon_size.cx,
+								s_Skin.Shutdown_icon_size.cy / 2, func2);
+						}
+						else
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Shutdown_icon_size.cx, s_Skin.Shutdown_icon_size.cy / 2, hdc2, 0,
+								0, s_Skin.Shutdown_icon_size.cx,
+								s_Skin.Shutdown_icon_size.cy / 2, func2);
+						}
+					}
+					else
+						BitBlt(hdc, iconXP_X, iconXP_Y, s_Skin.ProgramsXP_icon_size.cx, s_Skin.ProgramsXP_icon_size.cy, hdc2, 0,
+							  0, SRCCOPY);
+					SelectObject(hdc2, bmp0);
+				}
+				else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM && s_Skin.Logoff_icon.GetBitmap())
+				{
+					int iconXP_X = itemRect.left + s_Skin.Logoff_icon_padding.left - s_Skin.Logoff_icon_padding.right;
+					int iconXP_Y = itemRect.top + s_Skin.Logoff_icon_padding.top - s_Skin.Logoff_icon_padding.bottom;
+					const MenuBitmap& iconXP = s_Skin.Logoff_icon;
+					HGDIOBJ bmp0 = SelectObject(hdc2, iconXP.GetBitmap());
+					if (iconXP.bIs32)
+					{
+						BLENDFUNCTION func2 = {AC_SRC_OVER, 0, 255,AC_SRC_ALPHA};
+						if (bHot) 
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Logoff_icon_size.cx, s_Skin.Logoff_icon_size.cy / 2, hdc2, 0,
+								s_Skin.Logoff_icon_size.cy / 2, s_Skin.Logoff_icon_size.cx,
+								s_Skin.Logoff_icon_size.cy / 2, func2);
+						}
+						else
+						{
+							AlphaBlend(hdc, iconXP_X, iconXP_Y, s_Skin.Logoff_icon_size.cx, s_Skin.Logoff_icon_size.cy / 2, hdc2, 0,
+								0, s_Skin.Logoff_icon_size.cx,
+								s_Skin.Logoff_icon_size.cy / 2, func2);
+						}
+					}
+				}
+			}
+			if (pIcon && pIcon->bitmap && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
 			{
 				HBITMAP temp = ColorizeMonochromeImage(pIcon->bitmap, color);
 				HBITMAP bitmap = temp ? temp : pIcon->bitmap;
@@ -2470,6 +2586,46 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			itemRect.right - settings.arrPadding.cx - settings.arrPadding.cy - settings.textPadding.right,
 			itemRect.bottom - settings.textPadding.bottom
 		};
+		if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+		{
+			if (item.id==MENU_SHUTDOWN_BOX)
+			{
+				int centerY = (itemRect.top + itemRect.bottom) / 2 + s_Skin.Shutdown_text_padding.top - s_Skin.Shutdown_text_padding.bottom;
+
+				int left = itemRect.left + s_Skin.Shutdown_text_padding.left - s_Skin.Shutdown_text_padding.right;
+				int newTop = centerY - 12;
+				int newBottom = centerY + 12;
+
+				rc = {
+					left,
+					newTop,
+					itemRect.right,
+					newBottom
+				};
+			}
+			else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				int centerY = (itemRect.top + itemRect.bottom) / 2 + (s_Skin.Logoff_text_padding.top - s_Skin.Logoff_text_padding.bottom);
+
+				int left = itemRect.left + s_Skin.Logoff_text_padding.left - s_Skin.Logoff_text_padding.right;
+				int newTop = centerY - 12;
+				int newBottom = centerY + 12;
+
+				rc = {
+					left,
+					newTop,
+					itemRect.right,
+					newBottom
+				};
+			}
+		}
+		if (item.id==MENU_PROGRAMSXP)
+			rc = { 
+			itemRect.left+settings.textPadding.left,
+			itemRect.top+settings.textPadding.top,
+			itemRect.right-settings.textPadding.right,
+			itemRect.bottom-settings.textPadding.bottom
+		};
 		if (item.id == MENU_SHUTDOWN_BUTTON)
 		{
 			if (s_bHasUpdates && s_Skin.Shutdown_bitmap.GetBitmap())
@@ -2491,7 +2647,7 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 			flags |= DT_HIDEPREFIX;
 
 		CString name;
-		if (drawType == MenuSkin::PROGRAMS_BUTTON || drawType == MenuSkin::PROGRAMS_BUTTON_NEW || drawType ==
+		if (s_bWin7Style && drawType == MenuSkin::PROGRAMS_BUTTON || drawType == MenuSkin::PROGRAMS_BUTTON_NEW || drawType ==
 			MenuSkin::PROGRAMS_CASCADING || drawType == MenuSkin::PROGRAMS_CASCADING_NEW)
 			name = s_MenuMode == MODE_PROGRAMS
 				       ? FindTranslation(L"Menu.Back", L"Back")
@@ -2532,8 +2688,99 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				OffsetRect(&rc2, 1, 1);
 				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc2, &opts);
 			}
+
+			if (item.hasInternetSecondLabel == true)
+			{
+				int posNeticonText = name.Find(L"neticon");
+
+				if (posNeticonText != -1)
+				{
+					name.Delete(posNeticonText, 7);  // Remove ending "neticon" text
+				}
+				// Define text options for primary and secondary labels
+				DTTOPTS dttOpts = { sizeof(DTTOPTS) };
+				dttOpts.dwFlags = DTT_TEXTCOLOR | DTT_COMPOSITED;
+
+				dttOpts.crText = color;
+
+				RECT secondaryRect = itemRect;
+				secondaryRect.top += (5+GetSettingInt(L"SpecialIconTextOffsetTop"));
+				secondaryRect.left = rc.left;
+
+				RECT primaryRect = itemRect;
+				primaryRect.bottom -= (7+GetSettingInt(L"SpecialIconTextOffsetBottom"));
+				primaryRect.left = rc.left;
+
+
+				DTTOPTS optsTemp1 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
+				if (bHot)
+					optsTemp1.crText = settings.secondaryLabelColors[1];
+				else
+					optsTemp1.crText = settings.secondaryLabelColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_BOTTOM, &primaryRect, &optsTemp1);
+				SelectObject(hdc, settings.boldFont);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabel, item.secondaryLabel.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_TOP, &secondaryRect, &dttOpts);
+				SelectObject(hdc, settings.font);
+			}
+			else if (item.hasEmailSecondLabel == true)
+			{
+				int posYesmailText = name.Find(L"yesmail");
+
+				if (posYesmailText != -1)
+				{
+					name.Delete(posYesmailText, 7);  // Remove ending "neticon" text
+				}
+				// Define text options for primary and secondary labels
+				DTTOPTS dttOptsEmail = { sizeof(DTTOPTS) };
+				dttOptsEmail.dwFlags = DTT_TEXTCOLOR | DTT_COMPOSITED;
+
+				dttOptsEmail.crText = color;
+
+				RECT secondaryRectEmail = itemRect;
+				secondaryRectEmail.top += (5+GetSettingInt(L"SpecialIconTextOffsetTop"));
+				secondaryRectEmail.left = rc.left;
+
+				RECT primaryRectEmail = itemRect;
+				primaryRectEmail.bottom -= (7+GetSettingInt(L"SpecialIconTextOffsetBottom"));
+				primaryRectEmail.left = rc.left;
+
+				DTTOPTS optsTemp2 = { sizeof(opts),DTT_TEXTCOLOR | DTT_COMPOSITED };
+				if (bHot)
+					optsTemp2.crText = settings.secondaryLabelColors[1];
+				else
+					optsTemp2.crText = settings.secondaryLabelColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_BOTTOM, &primaryRectEmail, &optsTemp2);
+				SelectObject(hdc, settings.boldFont);
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, item.secondaryLabelEmail, item.secondaryLabelEmail.GetLength(), DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_TOP, &secondaryRectEmail, &dttOptsEmail);
+				SelectObject(hdc, settings.font);
+			}
+			if (item.isBold)
+			{
+				int posBoldText = name.Find(L"bold");
+				if (posBoldText != -1)
+				{
+					name.Delete(posBoldText, 4);  // Remove ending "bold" text
+				}
+				SelectObject(hdc, settings.boldFont);
+			}
+			else
+				SelectObject(hdc, settings.font);
+
+			if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				rc.right += 25;
+				if (bHot)
+					opts.crText = settings.bottomActionColors[1];
+				else
+					opts.crText = settings.bottomActionColors[0];
+				DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc, &opts);
+			}
+			else if (item.hasEmailSecondLabel != true && item.hasInternetSecondLabel != true && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
+			{
+				opts.dwFlags |= DTT_COMPOSITED;
 			opts.crText = color;
 			DrawThemeTextEx(s_Theme, hdc, 0, 0, name, name.GetLength(), flags, &rc, &opts);
+			}
 		}
 		else
 		{
@@ -2544,12 +2791,15 @@ void CMenuContainer::DrawBackground(HDC hdc, const RECT& drawRect)
 				SetTextColor(hdc, shadowColor);
 				DrawText(hdc, item.name, item.name.GetLength(), &rc, flags);
 			}
-
+			if (item.isBold)
+				SelectObject(hdc, settings.boldFont);
+			else
+				SelectObject(hdc, settings.font);
 			SetTextColor(hdc, color);
 			DrawText(hdc, name, name.GetLength(), &rc, flags);
 		}
 
-		if (item.bFolder && drawType != MenuSkin::PROGRAMS_BUTTON && drawType != MenuSkin::PROGRAMS_BUTTON_NEW)
+		if (item.bFolder && drawType != MenuSkin::PROGRAMSXP && drawType != MenuSkin::PROGRAMSXP_NEW && drawType != MenuSkin::PROGRAMS_BUTTON && drawType != MenuSkin::PROGRAMS_BUTTON_NEW)
 		{
 			// draw the sub-menu arrows
 			bool bHotArrow = (bHot && !bSplit) || stateRight > 0;

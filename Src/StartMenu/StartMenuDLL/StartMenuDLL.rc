@@ -368,6 +368,8 @@ IDI_START10             ICON                    "start10.ico"
 // Bitmap
 //
 
+900             		BITMAP                  "noskin_shutdown.bmp"
+901              		BITMAP                  "noskin_logoff.bmp"
 IDB_ARROWS              BITMAP                  "menu_arrows.bmp"
 IDB_ARROWS150           BITMAP                  "menu_arrows150.bmp"
 IDB_SEARCH_ICONS        BITMAP                  "search_icons.bmp"
@@ -630,8 +632,29 @@ BEGIN
     IDS_SKIN_ERRORS         "Report skin errors"
     IDS_SKIN_ERRORS_TIP     "When this is checked, the menu will report problems with the current skin. This is useful when creating and troubleshooting new skins"
     IDS_LOOK_SETTINGS       "Menu Look"
-    IDS_MENU_WIDTH          "Main menu width"
-    IDS_MENU_WIDTH_TIP      "Set the width of the main menu text to fit this many average-width characters"
+    IDS_MENU_WIDTH          "1st column width"
+    IDS_MENU2_WIDTH         "2nd column width"
+    IDS_MENU_WIDTH_TIP      "Set width of the 1st main menu column"
+    IDS_MENU2_WIDTH_TIP     "Set width of the 2nd main menu column"
+
+    IDS_SHUTDOWNXP_WIDTH       "Shutdown button width"
+    IDS_LOGOFFXP_WIDTH         "Logoff button width"
+    IDS_SHUTDOWNXP_WIDTH_TIP   "Set width of the Shutdown button"
+    IDS_LOGOFFXP_WIDTH_TIP     "Set width of the Logoff button"
+
+    IDS_PROGRAMSXP_OFFSET   "Submenu offset for XP-style Programs button"
+    IDS_PROGRAMSXP_OFFSET_TIP "Sets the offset of the Programs submenu when opened with the XP-style Programs button"
+
+	IDS_SPCICON_TOP_OFFSET   "Internet/E-mail text top offset"
+    IDS_SPCICON_TOP_OFFSET_TIP "Offset of the top text of the Internet/E-mail icon"
+
+	IDS_SPCICON_BTM_OFFSET   "Internet/E-mail text bottom offset"
+    IDS_SPCICON_BTM_OFFSET_TIP "Offset of the bottom text of the Internet/E-mail icon"
+
+	IDS_LOGOFF_COMMAND		"Logoff command"
+    IDS_LOGOFF_COMMAND_TIP "If set to anything except 'default', the Logoff command will execute this program"
+	IDS_SHUTDOWNXP_COMMAND		"Shutdown command"
+    IDS_SHUTDOWNXP_COMMAND_TIP "If set to anything except 'default', the Shutdown command will execute this program"
     IDS_SUBMENU_WIDTH       "Sub-menu width"
     IDS_SUBMENU_WIDTH_TIP   "Set the width of the sub-menu text to fit this many average-width characters"
     IDS_SAME_COLUMNS        "All columns are same size"
@@ -761,6 +784,7 @@ BEGIN
     IDS_BREAK_TIP           "(only for two-column main menus) marks the start of the second column"
     IDS_PADDING_TIP         "(only for two-column main menus) moves the rest of the items in the column to the bottom"
     IDS_PROGRAMS_TIP        "The Programs folder - contains all installed programs"
+    IDS_PROGRAMSXP_TIP      "The Programs folder - contains all installed programs"
     IDS_FAVORITES_TIP       "The Favorites folder"
     IDS_DOCUMENTS_TIP       "Shows the recent documents"
     IDS_USERFILES_TIP       "Shows the user files folder"
@@ -1025,6 +1049,7 @@ STRINGTABLE
 BEGIN
     IDS_LIB_TV_ITEM         "Recorded TV"
     IDS_PROGRAMS_ITEM       "Programs"
+    IDS_PROGRAMSXP_ITEM       "Programs (XP-style)"
     IDS_APPS_ITEM           "Apps"
     IDS_SETTINGS_ITEM       "Settings"
     IDS_SEARCH_MENU_ITEM    "Search menu"
@@ -1139,7 +1164,7 @@ BEGIN
     IDS_STRING7010          "Transparency level#Select how transparent the menu should be"
     IDS_STRING7011          "Small icons#The main menu will use small icons"
     IDS_STRING7012          "Solid color selection#The selection will use the system color instead of a gradient"
-    IDS_STRING7013          "3D border (requires Classic theme)#The menus will have a 3D look (only for Windows 7 with Classic theme)"
+    IDS_STRING7013          "3D border#The menus will have a 3D look"
     IDS_STRING7014          "Show user picture#The main menu will show the user picture"
     IDS_STRING7015          "Show user name#The main menu will show the user name"
     IDS_STRING7016          "White sub-menus#The sub-menus will have a white background instead of the system menu color"

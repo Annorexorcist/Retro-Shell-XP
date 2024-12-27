@@ -25,6 +25,7 @@
 #include <propvarutil.h>
 #include <algorithm>
 #include <propkey.h>
+#include <iostream>
 
 static CString g_RenameText;
 static POINT g_RenamePos;
@@ -418,6 +419,8 @@ void CMenuContainer::OpenSubMenu(int index, TActivateType type, bool bShift)
 
 	if (item.id == MENU_PROGRAMS || item.id == MENU_APPS || item.bFolder || (m_Options & CONTAINER_MULTICOL_REC))
 		options |= CONTAINER_MULTICOL_REC;
+	if (item.id==MENU_PROGRAMSXP)
+		options|=CONTAINER_MULTICOL_REC;
 	if ((options & CONTAINER_MULTICOL_REC) && !bShift)
 		options |= CONTAINER_MULTICOLUMN;
 	if (options & CONTAINER_SEARCH)
@@ -441,6 +444,11 @@ void CMenuContainer::OpenSubMenu(int index, TActivateType type, bool bShift)
 		-s_Skin.Submenu_padding.left + s_Skin.Submenu_offset, -s_Skin.Submenu_padding.top,
 		s_Skin.Submenu_padding.right - s_Skin.Submenu_offset, s_Skin.Submenu_padding.bottom
 	};
+	if (item.id == MENU_PROGRAMSXP)
+		border = {
+			-GetSettingInt(L"ProgramsXPOffset"), 0,
+			0, 0
+		};
 	if (s_bRTL)
 	{
 		// swap and change signs
@@ -1025,6 +1033,36 @@ static bool ConnectedStandby()
 	return false;
 }
 
+void SplitCommandLine(const ATL::CString& command, ATL::CString& exePath, ATL::CString& args) {
+    // convert setting to LPCWSTR so we can use it
+    LPCWSTR commandLine = command.GetString();
+    
+    // parse the command to strip EXE name and arguments
+    int argCount;
+    LPWSTR* argv = CommandLineToArgvW(commandLine, &argCount);
+	// if it's blank, set the variables to nothing
+    if (argv == nullptr || argCount < 1) {
+        exePath.Empty();
+        args.Empty();
+        return;
+    }
+
+    // get the EXE
+    exePath = argv[0];
+
+    // everything after [0] is an argument, parse them into one string
+    args.Empty();
+    for (int i = 1; i < argCount; ++i) {
+        if (!args.IsEmpty()) {
+            args += L" ";
+        }
+        args += argv[i];
+    }
+
+    // free up the memory we used to separate the input
+    LocalFree(argv);
+}
+
 static bool ExecuteSysCommand(TMenuID menuCommand)
 {
 	CComPtr<IShellDispatch2> pShellDisp;
@@ -1154,13 +1192,29 @@ static bool ExecuteSysCommand(TMenuID menuCommand)
 
 	case MENU_LOGOFF_CONFIRM:
 		{
-			HMODULE hShell32 = GetModuleHandle(L"Shell32.dll");
-			HICON icon = LoadIcon(hShell32,MAKEINTRESOURCE(45));
-			INT_PTR res = DialogBoxParam(g_Instance,MAKEINTRESOURCE(IsLanguageRTL()?IDD_LOGOFFR:IDD_LOGOFF),NULL,
-			                             LogOffDlgProc, (LPARAM)icon);
-			DestroyIcon(icon);
-			if (res)
-				ExitWindowsEx(EWX_LOGOFF, 0);
+			if (GetSettingString(L"LogoffCommand") != "default" && GetSettingString(L"LogoffCommand") != "")
+			{
+				ATL::CString arguments;
+				ATL::CString command;
+
+				SplitCommandLine(GetSettingString(L"LogoffCommand"), command, arguments);
+
+				SHELLEXECUTEINFO execute = {sizeof(execute),SEE_MASK_DOENVSUBST,NULL, L"open"};
+				execute.lpFile = command;
+				execute.lpParameters = arguments;
+				execute.nShow = SW_SHOWNORMAL;
+				ShellExecuteEx(&execute);
+			}
+			else
+			{
+				HMODULE hShell32 = GetModuleHandle(L"Shell32.dll");
+				HICON icon = LoadIcon(hShell32, MAKEINTRESOURCE(45));
+				INT_PTR res = DialogBoxParam(g_Instance, MAKEINTRESOURCE(IsLanguageRTL() ? IDD_LOGOFFR : IDD_LOGOFF), NULL,
+					LogOffDlgProc, (LPARAM)icon);
+				DestroyIcon(icon);
+				if (res)
+					ExitWindowsEx(EWX_LOGOFF, 0);
+			}
 		}
 		return true;
 
@@ -1225,9 +1279,26 @@ static bool ExecuteSysCommand(TMenuID menuCommand)
 		hr = CoCreateInstance(CLSID_Shell,NULL,CLSCTX_SERVER, IID_IShellDispatch2, (void**)&pShellDisp);
 		if (SUCCEEDED(hr))
 		{
-			hr = pShellDisp->ShutdownWindows();
-			if (FAILED(hr))
-				LOG_MENU(LOG_EXECUTE, L"Failed to ShutdownWindows, 0x08%x", hr);
+			if (GetSettingString(L"ShutdownCommand") != "default" && GetSettingString(L"ShutdownCommand") != "")
+			{
+				// these variables are used to store the EXE and arguments that are split using 
+				ATL::CString arguments;
+				ATL::CString command;
+
+				SplitCommandLine(GetSettingString(L"ShutdownCommand"), command, arguments);
+
+				SHELLEXECUTEINFO execute = {sizeof(execute),SEE_MASK_DOENVSUBST,NULL, L"open"};
+				execute.lpFile = command;
+				execute.lpParameters = arguments;
+				execute.nShow = SW_SHOWNORMAL;
+				ShellExecuteEx(&execute);
+			}
+			else
+			{
+				hr = pShellDisp->ShutdownWindows();
+				if (FAILED(hr))
+					LOG_MENU(LOG_EXECUTE, L"Failed to ShutdownWindows, 0x08%x", hr);
+			}
 		}
 		else
 			LOG_MENU(LOG_EXECUTE, L"Failed to create dispatch, 0x08%x", hr);
@@ -1677,7 +1748,7 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 		}
 		if (!pItemPidl1)
 		{
-			if (item.id < MENU_PROGRAMS) return; // non-executable item
+			if (item.id < MENU_PROGRAMS && item.id < MENU_PROGRAMSXP) return; // non-executable item
 			if (item.bFolder && item.pStdItem && item.pStdItem->submenu && !item.pStdItem->command && item.id !=
 				MENU_SHUTDOWN_BUTTON)
 				return; // non-executable item
@@ -1946,7 +2017,7 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 				}
 				else if (_stricmp(command, "rename") == 0 || _stricmp(command, "delete") == 0)
 				{
-					if (item.id != MENU_PROGRAMS) continue;
+					if (item.id != MENU_PROGRAMS && item.id != MENU_PROGRAMSXP) continue;
 				}
 				else if (_stricmp(command, "properties") == 0)
 				{
@@ -2490,6 +2561,18 @@ void CMenuContainer::ActivateItem(int index, TActivateType type, const POINT* pP
 		}
 
 		if (item.id == MENU_PROGRAMS)
+		{
+			bool bNew;
+			if (s_bWin7Style && GetWinVersion() >= WIN_VER_WIN8 && GetSettingBool(L"AllProgramsMetro"))
+				bNew = g_ItemManager.HasNewPrograms(true) || g_ItemManager.HasNewApps(true);
+			else
+				bNew = g_ItemManager.HasNewPrograms(true);
+			if (bNew)
+				InsertMenu(menu, insertBefore++,MF_BYPOSITION | MF_STRING, CMD_MARKOLD,
+				           FindTranslation(L"Menu.RemoveHighlight", L"Remove highlight"));
+				           
+		}
+		if (item.id == MENU_PROGRAMSXP)
 		{
 			bool bNew;
 			if (s_bWin7Style && GetWinVersion() >= WIN_VER_WIN8 && GetSettingBool(L"AllProgramsMetro"))

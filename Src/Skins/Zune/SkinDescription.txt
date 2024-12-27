@@ -1,0 +1,155 @@
+; About - text to use in the About box for this skin. use \n for new line
+About=XP theme modified into Watercolor by Anno.
+
+; AboutIcon - the ID of an icon resource to use in the About box
+AboutIcon=1
+User_opacity=solid
+; Version - version of the required skin engine. Set to 2 if the skin uses any of the new features introduced in Classic Shell 1.9.0 like full glass,
+; skinnable sub-menus, skinnable pager buttons, skinnable arrows, etc
+Version=2
+
+; XP-style internet and email label color
+Secondary_label_colors=#B3BFCD,#FFFFFF
+ShutdownLogoff_label_colors=#FFFFFF,#FFFFFF
+
+Shutdown_icon=28
+Shutdown_icon_padding=4,6,0,0
+Shutdown_text_padding=10,0,0,0
+
+Logoff_icon=27
+Logoff_icon_padding=4,6,0,0
+Logoff_text_padding=10,0,0,0
+
+User_name_position=65,19,-15,55
+User_name_align=left
+User_glow_offset=0,2
+User_glow_opacity=255
+User_font="Franklin Gothic Medium",normal,18
+User_text_color=#FFFFFF
+; Caption_glow_color - RRGGBB color of the caption glow. Defaults to white
+User_glow_color=#231814
+; Caption_glow_size - the width of the caption glow (0 - no glow). Defaults to 0
+User_glow_size=3
+
+User_image_size=48
+User_frame_position=6,6
+User_bitmap=13
+User_image_offset=2,2
+ 
+Main_bitmap=2
+
+Main_opacity=alpha
+
+Main_bitmap_slices_X=10,195,2,2,199,10
+Main_bitmap_slices_Y=65,5,140
+
+
+
+Main_icon_size=LARGE
+Main2_icon_size=MEDIUM
+
+Main_font="Tahoma",normal,-8.5
+Main_text_padding=1,5,8,5,100%
+
+Main2_font="Tahoma",normal,-8.5
+Main2_text_padding=1,5,6,5,100%
+;Main2_text_padding=8,7,8,7,100%
+
+Main_boldfont="Tahoma",bold,-8.5
+Main2_boldfont="Tahoma",bold,-8.5
+Main_split_boldfont="Tahoma",bold,-8.5
+
+Main_background=#FFFFFF
+Main_text_color=#FFFFFF,#FFFFFF,#7F7F7F,#7F7F7F
+Main2_text_color=#FFFFFF,#FFFFFF,#7F7F7F,#7F7F7F
+
+Main_padding=7,67,5,44
+MAIN_ICON_PADDING=3,3,3,3
+
+Main_arrow=7
+Main_arrow_padding=8,9,100%
+Main_split_arrow=7
+Main_split_arrow_padding=7,7,100%
+
+Main_separator=11
+Main_separator_slices_X=21,140,21
+
+Main_selection=22
+Main_selection_slices_X=4,1,5
+Main_selection_slices_Y=2,1,2
+
+Main_new_selection=23
+Main_new_selection_slices_X=4,1,5
+Main_new_selection_slices_Y=2,1,2
+
+Main_split_selection=21
+Main_split_selection_slices_X=4,1,1,1,1,2
+Main_split_selection_slices_Y=2,1,2
+
+Main2_padding=11,69,4,3
+MAIN2_ICON_PADDING=3,6,3,6
+
+Main2_arrow_padding=8,9,100%
+Main2_arrow=7
+Main2_split_arrow=7
+
+Main2_separator=12
+Main2_separator_slices_X=11,171,11
+
+Main2_split_selection=26
+Main2_split_selection_slices_X=4,1,1,1,1,2
+Main2_split_selection_slices_Y=2,1,2
+
+ProgramsXP_button_selection=4
+ProgramsXP_icon=4
+ProgramsXP_icon_selected=4
+ProgramsXP_icon_padding=30,1,0,-2
+ProgramsXP_text_padding=15,8,0,8,100%
+ProgramsXP_font="Tahoma",bold,-8.5
+ProgramsXP_button_new_text_padding=0,0,0,0,100%
+ProgramsXP_text_color=#FFFFFF,#FFFFFF,#7F7F7F,#7F7F7F
+
+
+Submenu_bitmap=3
+Submenu_bitmap_slices_X=8,174,2
+Submenu_bitmap_slices_Y=2,18,2
+Submenu_opacity=region
+Submenu_padding=6,2,2,2
+Submenu_font="Tahoma",normal,-8.5
+Submenu_text_color=#373738,#FFFFFF,#7F7F7F,#7F7F7F
+
+Submenu_selection=24
+Submenu_selection_slices_X=4,1,5
+Submenu_selection_slices_Y=2,1,2
+
+Submenu_new_selection=23
+Submenu_new_selection_slices_X=4,1,5
+Submenu_new_selection_slices_Y=2,1,2
+
+Submenu_split_selection=25
+Submenu_split_selection_slices_X=4,1,1,1,1,2
+Submenu_split_selection_slices_Y=2,1,2
+
+Submenu_offset=0
+Submenu_separator=15
+Submenu_separator_slices_X=50,75,50
+Submenu_separator_font="Tahoma",italic,-8.5
+Submenu_separator_text_color=#373738,#FFFFFF
+Submenu_separator_text_padding=3,4,4,4,100%
+Submenu_separator_icon_padding=6,3,3,3,100%
+Submenu_separator_split_font="Tahoma",italic,-8.5
+Submenu_separator_split_color=#373738,#FFFFFF
+Submenu_separator_split_text_padding=3,4,4,4,100%
+Submenu_separator_split_icon_padding=6,3,3,3,100%
+
+; Submenu_separatorV - bitmap to use as a vertical separator between multiple columns
+Submenu_separatorV=14
+Submenu_separatorV_slices_Y=50,75,50
+
+; More_bitmap - a bitmap for the "more" button in search categories. set to 0 to use the default icon. set to "none" to hide the button
+More_bitmap=none
+
+; OPTIONS
+
+OPTION NOOP="No options",0
+OPTION YET="...yet",0

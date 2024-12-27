@@ -32,10 +32,12 @@
 #include <PowrProf.h>
 #include <dwmapi.h>
 #include <propkey.h>
+#include <string>
 #define SECURITY_WIN32
 #include <Security.h>
 #include <algorithm>
 #include <wuapi.h>
+using namespace std;
 
 struct StdMenuOption
 {
@@ -1316,6 +1318,11 @@ void CMenuContainer::AddStandardItems(void)
 				iconSizeType = CItemManager::ICON_SIZE_TYPE_EXTRA_LARGE;
 				refreshFlags = CItemManager::INFO_EXTRA_LARGE_ICON;
 			}
+			else if (item.id==MENU_SHUTDOWN_BOX || item.id==MENU_LOGOFF || item.id==MENU_LOGOFF_CONFIRM)
+			{
+				iconSizeType = CItemManager::ICON_SIZE_TYPE_MEDIUM;
+				refreshFlags = CItemManager::INFO_MEDIUM_ICON;
+			}
 			else if (mainIconSize == MenuSkin::ICON_SIZE_LARGE)
 			{
 				iconSizeType = CItemManager::ICON_SIZE_TYPE_LARGE;
@@ -1479,7 +1486,48 @@ void CMenuContainer::AddStandardItems(void)
 				else if (s_bHasUpdates && m_bSubMenu && item.id == MENU_RESTART && GetWinVersion() >= WIN_VER_WIN8)
 					item.name = FindTranslation(L"Menu.RestartUpdate", L"Update and restart");
 				else
+				{
 					item.name = pStdItem->label;
+					
+					// Check for "bold" markers at the start of the label text
+					int startPos = item.name.Find(L"bold");
+
+					if (startPos != -1)
+					{
+						item.isBold = true;
+					}
+					else
+					{
+						item.isBold = false;
+					}
+
+					// As with previous, check for "neticon" marker, but at the end of the label text
+					int endPos = item.name.Find(L"neticon");
+
+					if (endPos != -1)
+					{
+						item.secondaryLabel = _T("Internet");
+						item.hasInternetSecondLabel = true;
+					}
+					else
+					{
+						item.secondaryLabel = _T("");
+						item.hasInternetSecondLabel = false;
+					}
+
+					int endPos2 = item.name.Find(L"yesmail");
+
+					if (endPos2 != -1)
+					{
+						item.secondaryLabelEmail = _T("E-mail");
+						item.hasEmailSecondLabel = true;
+					}
+					else
+					{
+						item.secondaryLabelEmail = _T("");
+						item.hasEmailSecondLabel = false;
+					}
+				}
 			}
 			else if (item.pItem1)
 			{
@@ -1510,7 +1558,7 @@ void CMenuContainer::AddStandardItems(void)
 				}
 			}
 
-			item.bPrograms = (item.id == MENU_PROGRAMS || item.id == MENU_FAVORITES);
+			item.bPrograms = (item.id == MENU_PROGRAMSXP || item.id == MENU_PROGRAMS || item.id == MENU_FAVORITES);
 			if (item.bInline)
 				item.bFolder = false;
 
@@ -1543,6 +1591,45 @@ void CMenuContainer::UpdateAccelerators(int first, int last)
 	for (int i = first; i < last; i++)
 	{
 		MenuItem& item = m_Items[i];
+		
+		// Check for "bold" markers at the start of the label text
+		int startPos = item.name.Find(L"bold");
+
+		if (startPos != -1)
+		{
+			item.isBold = true;
+		}
+		else
+		{
+			item.isBold = false;
+		}
+
+		// As with previous, check for "neticon" marker, but at the end of the label text
+		int endPos = item.name.Find(L"neticon");
+
+		if (endPos != -1)
+		{
+			item.secondaryLabel = _T("Internet");
+			item.hasInternetSecondLabel = true;
+		}		
+		else
+		{
+			item.secondaryLabel = _T("");
+			item.hasInternetSecondLabel = false;
+		}
+
+		int endPos2 = item.name.Find(L"yesmail");
+
+		if (endPos2 != -1)
+		{
+			item.secondaryLabelEmail = _T("E-mail");
+			item.hasEmailSecondLabel = true;
+		}
+		else
+		{
+			item.secondaryLabelEmail = _T("");
+			item.hasEmailSecondLabel = false;
+		}		
 		if (item.id == MENU_SEPARATOR || item.id == MENU_EMPTY || item.id == MENU_EMPTY_TOP || item.id ==
 			MENU_SEARCH_EMPTY || item.id == MENU_SEARCH_BOX || item.name.IsEmpty() || (item.id == MENU_RECENT &&
 				recentKeys != RECENT_KEYS_NORMAL))
@@ -2705,7 +2792,7 @@ void CMenuContainer::InitItems(void)
 		{
 			if (m_Items[i].id == MENU_PROGRAMS_TREE)
 				m_ProgramTreeIndex = i;
-			if (m_Items[i].id == MENU_PROGRAMS)
+			if (m_Items[i].id == MENU_PROGRAMS || m_Items[i].id == MENU_PROGRAMSXP)
 				m_ProgramButtonIndex = i;
 			if (m_Items[i].id == MENU_SEARCH_BOX)
 				m_SearchIndex = i;
@@ -3278,11 +3365,14 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 	else
 	{
 		int numChar = GetSettingInt(L"MaxMainMenuWidth");
-		int width = s_Skin.ItemSettings[MenuSkin::COLUMN1_ITEM].textMetrics.tmAveCharWidth;
-		maxItemWidth[0] = numChar ? width * numChar : 65536;
-		maxItemWidth[1] = numChar
-			                  ? s_Skin.ItemSettings[MenuSkin::COLUMN2_ITEM].textMetrics.tmAveCharWidth * numChar
-			                  : 65536;
+		if (numChar <= 0) numChar = 200;
+		int num2Char = GetSettingInt(L"MaxMainMenu2Width");
+		if (num2Char <= 0) num2Char = 200;
+		int width = numChar;
+		int width2 = num2Char;
+		maxItemWidth[0] = numChar;
+		maxItemWidth[1] = num2Char;
+
 		if (s_bWin7Style)
 		{
 			if (s_MenuMode == MODE_SEARCH)
@@ -3398,6 +3488,7 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 				else
 					item.drawType = MenuSkin::SHUTDOWN_BUTTON;
 			}
+
 			else if (s_bWin7Style && item.id == MENU_SEARCH_CATEGORY)
 			{
 				item.drawType = (item.bSplit) ? MenuSkin::LIST_SEPARATOR_SPLIT : MenuSkin::LIST_SEPARATOR;
@@ -3408,6 +3499,10 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 					item.drawType = item.bNew ? MenuSkin::PROGRAMS_BUTTON_NEW : MenuSkin::PROGRAMS_BUTTON;
 				else
 					item.drawType = item.bNew ? MenuSkin::PROGRAMS_CASCADING_NEW : MenuSkin::PROGRAMS_CASCADING;
+			}
+			else if (item.id == MENU_PROGRAMSXP)
+			{
+				item.drawType = item.bNew ? MenuSkin::PROGRAMSXP_NEW : MenuSkin::PROGRAMSXP;
 			}
 			else if (s_bWin7Style && m_bTwoColumns && (s_MenuMode == MODE_SEARCH || s_MenuMode == MODE_JUMPLIST) && i >=
 				m_OriginalCount)
@@ -3458,6 +3553,10 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 			int iconSize = 0;
 			if (settings.iconSize == MenuSkin::ICON_SIZE_SMALL)
 				iconSize = g_ItemManager.SMALL_ICON_SIZE;
+			else if (settings.iconSize == MenuSkin::ICON_SIZE_MEDIUM)
+				iconSize = g_ItemManager.MEDIUM_ICON_SIZE;
+			else if (item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+				iconSize = g_ItemManager.MEDIUM_ICON_SIZE;
 			else if (settings.iconSize == MenuSkin::ICON_SIZE_LARGE)
 				iconSize = g_ItemManager.LARGE_ICON_SIZE;
 			if (item.id == MENU_PROGRAMS_TREE)
@@ -3595,7 +3694,19 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 
 	SelectObject(hdc, font0);
 	DeleteDC(hdc);
-
+	if (!m_bSubMenu)
+	{
+		if (GetSettingInt(L"MaxMainMenuWidth") > 0)
+		{
+			int width = GetSettingInt(L"MaxMainMenuWidth");
+			columnWidths[0] = width;
+		}
+		if (GetSettingInt(L"MaxMainMenu2Width") > 0)
+		{
+			int width = GetSettingInt(L"MaxMainMenu2Width");
+			columnWidths[1] = width;
+		}
+	}
 	if (columnWidths.size() == 1)
 	{
 		if (s_bWin7Style && !m_bSubMenu)
@@ -3679,11 +3790,45 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 		for (int i = 0; i < (int)m_Items.size(); i++)
 		{
 			MenuItem& item = m_Items[i];
-			if (item.bInline)
+			if (item.bInline && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
 			{
 				item.itemRect.left += m_ColumnOffsets[item.column];
 				item.itemRect.right += m_ColumnOffsets[item.column];
 				bInline = true;
+			}
+			else if (item.bInline && item.id == MENU_SHUTDOWN_BOX || item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+			{
+				// HACKHACK - temporarily tell the menu it's not inline
+				// HACKHACK - in order to force the menu to let us use our own positions
+				// HACKHACK - we're bypassing the main bInLine setting function now
+				// bInline = false;
+
+				// width of items
+				// TODO - make these user-servicable parameters and not hard-coded
+				// TODO - done 21-11-2024
+				const int shutdownWidth = GetSettingInt(L"ShutdownXPWidth");
+				const int logoffWidth = GetSettingInt(L"LogoffXPWidth");
+
+				// HACKHACK - there's probably a better way to get menu width
+				int menuWidth = s_MenuWidthNormal+columnWidths[0] + columnWidths[1]+ s_Skin.Main2_padding.right;
+				
+
+				// HACKHACK - track right edge of items
+				// HACKHACK - once again, probably a better way to do this
+				static int currentRightEdge = menuWidth;
+
+				if (item.id == MENU_SHUTDOWN_BOX)
+				{
+					// pin shutdown item to right side of menu
+					item.itemRect.right = menuWidth;
+					item.itemRect.left = item.itemRect.right - shutdownWidth;
+					
+				}
+				else if (item.id == MENU_LOGOFF || item.id == MENU_LOGOFF_CONFIRM)
+				{
+					item.itemRect.right = menuWidth - shutdownWidth-2;
+					item.itemRect.left = item.itemRect.right - logoffWidth;
+				}
 			}
 			else if (item.id == MENU_SHUTDOWN_BUTTON)
 			{
@@ -3729,7 +3874,7 @@ void CMenuContainer::InitWindowInternal(bool bDontShrink, const POINT& corner, R
 			for (size_t i = 0; i < m_Items.size(); i++)
 			{
 				MenuItem& item = m_Items[i];
-				if (item.bInlineFirst)
+				if (item.bInlineFirst && item.id != MENU_SHUTDOWN_BOX && item.id != MENU_LOGOFF && item.id != MENU_LOGOFF_CONFIRM)
 				{
 					int i1 = (int)i;
 					bool bSepLeft = (item.id == MENU_SEPARATOR);
@@ -5755,6 +5900,8 @@ LRESULT CMenuContainer::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 			const MenuItem& item = m_Items[i];
 			if ((column == -1 || item.column == column) && CanSelectItem(i) && item.id != MENU_SEARCH_BOX)
 			{
+				if (item.id==MENU_PROGRAMSXP)
+					continue;				
 				if (s_bWin7Style && m_bTwoColumns && (item.id == MENU_PROGRAMS || item.id == MENU_MORE_RESULTS || item.
 					id == MENU_SEARCH_INTERNET || item.id == MENU_SEARCH_PROVIDER || item.id == MENU_SHUTDOWN_BUTTON))
 					continue;
@@ -6948,11 +7095,11 @@ LRESULT CMenuContainer::OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 		if (m_rUser1.left < m_rUser1.right && PtInRect(&m_rUser1, pt))
 		{
 			RunUserCommand(true);
-		}
+		}/*
 		if (m_rUser2.left < m_rUser2.right && PtInRect(&m_rUser2, pt))
 		{
 			RunUserCommand(false);
-		}
+		}*/
 		bool bArrow = false;
 		int index = HitTest(pt, &bArrow);
 		if (index < 0)
@@ -7134,7 +7281,7 @@ LRESULT CMenuContainer::OnSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		ScreenToClient(&pt);
 		if (PtInRect(&m_rUser2, pt))
 		{
-			SetCursor(LoadCursor(NULL,IDC_HAND));
+			SetCursor(LoadCursor(NULL,IDC_ARROW));
 			return TRUE;
 		}
 	}
@@ -8359,16 +8506,22 @@ HWND CMenuContainer::ToggleStartMenu(int taskbarId, bool bKeyboard, bool bAllPro
 	if (bTheme)
 	{
 		if (s_Skin.Main_opacity == MenuSkin::OPACITY_SOLID)
-			dwStyle |= WS_BORDER;
+			if (s_Skin.Force_thick_borders_main)
+				dwStyle |= WS_DLGFRAME | WS_EX_CLIENTEDGE;
+			else
+				dwStyle |= WS_BORDER;
 		if (s_Skin.Submenu_opacity == MenuSkin::OPACITY_SOLID)
-			s_SubmenuStyle |= WS_BORDER;
+			if (s_Skin.Force_thick_borders_sub)
+				s_SubmenuStyle |= WS_DLGFRAME | WS_EX_CLIENTEDGE;
+			else
+				s_SubmenuStyle |= WS_BORDER;
 	}
 	else
 	{
 		if (s_Skin.Main_opacity == MenuSkin::OPACITY_SOLID)
-			dwStyle |= s_Skin.Main_thin_frame ? WS_BORDER : WS_DLGFRAME;
+			dwStyle |= !s_Skin.Force_thick_borders_main ? WS_BORDER : WS_DLGFRAME;
 		if (s_Skin.Submenu_opacity == MenuSkin::OPACITY_SOLID)
-			s_SubmenuStyle |= s_Skin.Submenu_thin_frame ? WS_BORDER : WS_DLGFRAME;
+			s_SubmenuStyle |= !s_Skin.Force_thick_borders_sub ? WS_BORDER : WS_DLGFRAME;
 	}
 
 	if (s_bWin7Style)

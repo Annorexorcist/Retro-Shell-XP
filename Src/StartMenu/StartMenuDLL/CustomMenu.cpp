@@ -20,6 +20,7 @@ static StdMenuItem g_StdMenu[] =
 {
 	// * means the command is not executable (for things like Settings, or for items that have FOLDERID)
 	{L"*programs", MENU_PROGRAMS, &FOLDERID_Programs, &FOLDERID_CommonPrograms},
+	{L"*progsxp", MENU_PROGRAMSXP, &FOLDERID_Programs, &FOLDERID_CommonPrograms},
 	{L"*favorites", MENU_FAVORITES, &FOLDERID_Favorites},
 	{L"*computer", MENU_COMPUTER, &FOLDERID_ComputerFolder},
 	{L"*recent_documents", MENU_DOCUMENTS, &FOLDERID_Recent},
@@ -571,7 +572,7 @@ const StdMenuItem* ParseCustomMenu(unsigned int& rootSettings)
 			{
 				if (g_CustomMenu[i].id == MENU_COLUMN_BREAK)
 					bBreak = true;
-				if (g_CustomMenu[i].id == MENU_PROGRAMS)
+				if (g_CustomMenu[i].id == MENU_PROGRAMS || g_CustomMenu[i].id == MENU_PROGRAMSXP)
 					after = i;
 			}
 			if (!bBreak && after >= 0)
